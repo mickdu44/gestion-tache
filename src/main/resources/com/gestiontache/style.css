@@ -94,6 +94,14 @@
     -fx-text-fill: #1e40af;
 }
 
+.recurrence-badge {
+    -fx-background-color: #ede9fe;
+    -fx-background-radius: 10;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11px;
+    -fx-text-fill: #5b21b6;
+}
+
 .bottom-bar {
     -fx-background-color: #ffffff;
     -fx-border-color: #e5e7eb transparent transparent transparent;

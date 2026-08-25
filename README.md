@@ -17,6 +17,9 @@ ne quitte la machine : tout est stocke en local.
   (titre, date, statut, priorite, description) dans un panneau a droite.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Taches recurrentes** : une tache peut etre configuree en Quotidienne,
+  Hebdomadaire ou Jours ouvres ; la marquer comme terminee cree
+  automatiquement la prochaine occurrence (non terminee) a la bonne date.
 - **Report des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;

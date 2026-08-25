@@ -50,6 +50,7 @@
                     <Label fx:id="detailDateLabel" styleClass="detail-date"/>
                     <Label fx:id="detailStatusLabel" styleClass="detail-status"/>
                     <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
+                    <Label fx:id="detailRecurrenceLabel" styleClass="recurrence-badge"/>
                 </HBox>
                 <Separator/>
                 <Label text="Description" styleClass="detail-section-title"/>

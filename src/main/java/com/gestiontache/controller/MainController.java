@@ -1,6 +1,7 @@
 package com.gestiontache.controller;
 
 import com.gestiontache.model.Priority;
+import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
@@ -63,6 +64,8 @@ public class MainController {
     private Label detailStatusLabel;
     @FXML
     private Label detailPriorityLabel;
+    @FXML
+    private Label detailRecurrenceLabel;
     @FXML
     private Label detailDescriptionLabel;
 
@@ -217,6 +220,7 @@ public class MainController {
                     existing != null ? existing.getTitle() : null,
                     existing != null ? existing.getDescription() : null,
                     existing != null ? existing.getPriority() : Priority.MOYENNE,
+                    existing != null ? existing.getRecurrence() : Recurrence.AUCUNE,
                     existing != null ? existing.getDate() : defaultDate);
 
             Dialog<Task> dialog = new Dialog<>();
@@ -233,11 +237,13 @@ public class MainController {
                 if (existing == null) {
                     Task task = new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
                     task.setPriority(controller.getPriority());
+                    task.setRecurrence(controller.getRecurrence());
                     return task;
                 }
                 existing.setTitle(controller.getTitle());
                 existing.setDescription(controller.getDescription());
                 existing.setPriority(controller.getPriority());
+                existing.setRecurrence(controller.getRecurrence());
                 existing.setDate(controller.getDate());
                 return existing;
             });
@@ -331,6 +337,10 @@ public class MainController {
         detailPriorityLabel.setText(task.getPriority().toString());
         detailPriorityLabel.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
         detailPriorityLabel.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
+        boolean recurring = task.getRecurrence() != Recurrence.AUCUNE;
+        detailRecurrenceLabel.setText("🔁 " + task.getRecurrence());
+        detailRecurrenceLabel.setVisible(recurring);
+        detailRecurrenceLabel.setManaged(recurring);
         String description = task.getDescription();
         detailDescriptionLabel.setText(
                 description == null || description.isBlank() ? "(Aucune description)" : description);

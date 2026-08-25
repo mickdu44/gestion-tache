@@ -1,5 +1,6 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -38,6 +39,7 @@ public class TaskListCell extends ListCell<Task> {
     private final Label titleLabel = new Label();
     private final Label descriptionLabel = new Label();
     private final Label priorityBadge = new Label();
+    private final Label recurrenceBadge = new Label();
     private final Label dateBadge = new Label();
     private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
@@ -65,6 +67,7 @@ public class TaskListCell extends ListCell<Task> {
         descriptionLabel.getStyleClass().add("task-description");
         descriptionLabel.setWrapText(true);
         priorityBadge.getStyleClass().add("priority-badge");
+        recurrenceBadge.getStyleClass().add("recurrence-badge");
         dateBadge.getStyleClass().add("task-date-badge");
         editButton.getStyleClass().add("icon-button");
         deleteButton.getStyleClass().add("icon-button");
@@ -76,7 +79,8 @@ public class TaskListCell extends ListCell<Task> {
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, dateBadge, editButton, deleteButton);
+        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, recurrenceBadge, dateBadge,
+                editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
@@ -190,6 +194,11 @@ public class TaskListCell extends ListCell<Task> {
         priorityBadge.setText(task.getPriority().toString());
         priorityBadge.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
         priorityBadge.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
+
+        boolean recurring = task.getRecurrence() != Recurrence.AUCUNE;
+        recurrenceBadge.setText("🔁 " + task.getRecurrence());
+        recurrenceBadge.setVisible(recurring);
+        recurrenceBadge.setManaged(recurring);
 
         if (showDateBadge && task.getDate() != null) {
             dateBadge.setText(task.getDate().format(DATE_BADGE_FORMAT));

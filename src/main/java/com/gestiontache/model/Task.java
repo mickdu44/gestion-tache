@@ -18,6 +18,7 @@ public class Task {
     private LocalDateTime createdAt;
     private int order;
     private Priority priority = Priority.MOYENNE;
+    private Recurrence recurrence = Recurrence.AUCUNE;
 
     public Task() {
         // Required for JSON deserialization.
@@ -96,6 +97,14 @@ public class Task {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public Recurrence getRecurrence() {
+        return recurrence;
+    }
+
+    public void setRecurrence(Recurrence recurrence) {
+        this.recurrence = recurrence;
     }
 
     /**
