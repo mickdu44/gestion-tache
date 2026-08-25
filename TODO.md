@@ -7,7 +7,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [x] Priorites (haute, moyenne, basse) sur les taches, visibles dans la liste et le detail, filtrables via la barre du haut. Reste a discuter : etiquettes/categories personnalisees au-dela des 3 niveaux fixes.
 - [ ] text enrichi dans la description des tâches
 - [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
-- [ ] Vue "semaine" ou "liste de toutes les taches en retard" en plus de la vue par jour.
+- [x] Liste de toutes les taches en retard (toutes dates confondues, triees de la plus ancienne a la plus recente), avec report groupe a aujourd'hui. Reste a discuter : vue "semaine".
 - [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
 - [ ] Statistiques simples (taches terminees par jour/semaine, taux de completion).
 - [ ] Annulation (undo) apres suppression d'une tache.

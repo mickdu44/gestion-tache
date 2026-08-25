@@ -59,6 +59,21 @@ class TaskServiceTest {
     }
 
     @Test
+    void overdueUnfinishedTasksAreSortedOldestFirst() {
+        Task recent = new Task("Tache d'hier", "", today.minusDays(1));
+        Task old = new Task("Tache d'il y a 5 jours", "", today.minusDays(5));
+        Task done = new Task("Tache deja terminee", "", today.minusDays(2));
+        done.setCompleted(true);
+        service.addTask(recent);
+        service.addTask(old);
+        service.addTask(done);
+
+        List<Task> overdue = service.getOverdueUnfinishedTasks(today);
+
+        assertEquals(List.of(old.getId(), recent.getId()), overdue.stream().map(Task::getId).toList());
+    }
+
+    @Test
     void searchMatchesTitleOrDescriptionAcrossAllDays() {
         service.addTask(new Task("Facturation client Dupont", "envoyer la facture", today));
         service.addTask(new Task("Reunion equipe", "parler du client Dupont", today.minusDays(1)));

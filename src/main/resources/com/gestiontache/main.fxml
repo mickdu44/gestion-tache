@@ -8,6 +8,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -27,6 +28,7 @@
                 <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
                 <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
                 <ComboBox fx:id="priorityFilterCombo"/>
+                <ToggleButton fx:id="overdueToggleButton" text="Taches en retard" onAction="#onToggleOverdue"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>
                 <Button fx:id="clearSearchButton" text="✕" onAction="#onClearSearch" styleClass="icon-button"/>

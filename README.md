@@ -17,6 +17,10 @@ ne quitte la machine : tout est stocke en local.
   (titre, date, statut, priorite, description) dans un panneau a droite.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Taches en retard** : bouton "Taches en retard" dans la barre du haut
+  pour lister toutes les taches non terminees de jours precedents (toutes
+  dates confondues, de la plus ancienne a la plus recente), avec un
+  bouton pour les reporter en une fois a aujourd'hui.
 - **Report des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;

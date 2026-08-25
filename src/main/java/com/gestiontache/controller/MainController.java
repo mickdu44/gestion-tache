@@ -15,6 +15,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
@@ -33,6 +34,8 @@ public class MainController {
 
     @FXML
     private ComboBox<String> priorityFilterCombo;
+    @FXML
+    private ToggleButton overdueToggleButton;
     @FXML
     private Label dateLabel;
     @FXML
@@ -88,8 +91,21 @@ public class MainController {
         taskListView.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
 
-        searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.isBlank()) {
+                overdueToggleButton.setSelected(false);
+            }
+            refresh();
+        });
 
+        refresh();
+    }
+
+    @FXML
+    private void onToggleOverdue() {
+        if (overdueToggleButton.isSelected()) {
+            searchField.clear();
+        }
         refresh();
     }
 
@@ -153,6 +169,18 @@ public class MainController {
         if (isSearching()) {
             return;
         }
+        if (overdueToggleButton.isSelected()) {
+            int moved = taskService.reportOverdueToToday(LocalDate.now());
+            overdueToggleButton.setSelected(false);
+            currentDate = LocalDate.now();
+            refresh();
+            if (moved == 0) {
+                showInfo("Aucune tache en retard a reporter.");
+            } else {
+                showInfo(moved + " tache(s) reportee(s) a aujourd'hui.");
+            }
+            return;
+        }
         int moved = taskService.reportUnfinishedToNextDay(currentDate);
         refresh();
         if (moved == 0) {
@@ -196,11 +224,13 @@ public class MainController {
 
     /**
      * Manual reordering only makes sense when browsing a single day with no
-     * priority filter applied (otherwise the list view holds a subset of the
-     * day's tasks, and a drag-and-drop move could not be persisted meaningfully).
+     * priority filter applied and outside the overdue-tasks view (otherwise
+     * the list view holds a subset, or a mix of days, and a drag-and-drop
+     * move could not be persisted meaningfully).
      */
     private boolean isReorderEnabled() {
-        return !isSearching() && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
+        return !isSearching() && !overdueToggleButton.isSelected()
+                && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
     }
 
     /**
@@ -254,19 +284,25 @@ public class MainController {
 
     private void refresh() {
         boolean searching = isSearching();
-        prevDayButton.setDisable(searching);
-        nextDayButton.setDisable(searching);
-        todayButton.setDisable(searching);
+        boolean overdue = !searching && overdueToggleButton.isSelected();
+        boolean showDateBadge = searching || overdue;
+        prevDayButton.setDisable(searching || overdue);
+        nextDayButton.setDisable(searching || overdue);
+        todayButton.setDisable(searching || overdue);
+        overdueToggleButton.setDisable(searching);
         reportButton.setDisable(searching);
+        reportButton.setText(overdue ? "Reporter tout a aujourd'hui" : "Reporter les taches non terminees a demain");
 
         taskListView.setCellFactory(list -> new TaskListCell(
                 this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
-                searching, isReorderEnabled(), this::onTasksReordered));
+                showDateBadge, isReorderEnabled(), this::onTasksReordered));
 
         List<Task> tasks;
         if (searching) {
             String keyword = searchField.getText();
             tasks = taskService.search(keyword);
+        } else if (overdue) {
+            tasks = taskService.getOverdueUnfinishedTasks(LocalDate.now());
         } else {
             tasks = taskService.getTasksForDate(currentDate);
         }
@@ -283,6 +319,10 @@ public class MainController {
             dateLabel.setText("Resultats de recherche");
             statusLabel.setText("\"" + keyword.trim() + "\" trouve dans le titre ou la description");
             countLabel.setText(tasks.size() + " tache(s) trouvee(s)");
+        } else if (overdue) {
+            dateLabel.setText("Taches en retard");
+            statusLabel.setText("Taches non terminees provenant de jours precedents");
+            countLabel.setText(tasks.size() + " tache(s) en retard");
         } else {
             String label = capitalize(currentDate.format(DAY_FORMAT));
             if (currentDate.isEqual(LocalDate.now())) {
