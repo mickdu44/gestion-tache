@@ -1,0 +1,81 @@
+.root-pane {
+    -fx-background-color: #f4f5f7;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.date-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #23272f;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.count-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.task-list {
+    -fx-background-color: transparent;
+    -fx-padding: 8;
+}
+
+.task-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 4 0 4 0;
+}
+
+.task-row {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 1);
+}
+
+.task-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.task-title-completed {
+    -fx-strikethrough: true;
+    -fx-text-fill: #9ca3af;
+}
+
+.task-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.task-date-badge {
+    -fx-background-color: #e5e7eb;
+    -fx-background-radius: 10;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11px;
+    -fx-text-fill: #374151;
+}
+
+.bottom-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb transparent transparent transparent;
+    -fx-border-width: 1;
+}
+
+.primary-button {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
