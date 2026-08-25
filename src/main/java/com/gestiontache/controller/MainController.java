@@ -13,6 +13,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -44,6 +45,18 @@ public class MainController {
     private Button todayButton;
     @FXML
     private Button reportButton;
+    @FXML
+    private Label detailPlaceholder;
+    @FXML
+    private VBox detailContent;
+    @FXML
+    private Label detailTitleLabel;
+    @FXML
+    private Label detailDateLabel;
+    @FXML
+    private Label detailStatusLabel;
+    @FXML
+    private Label detailDescriptionLabel;
 
     private TaskService taskService;
     private LocalDate currentDate;
@@ -55,6 +68,9 @@ public class MainController {
 
         taskListView.setCellFactory(list -> new TaskListCell(
                 this::onToggleCompleted, this::onEditTask, this::onDeleteTask, isSearching()));
+
+        taskListView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
@@ -228,7 +244,43 @@ public class MainController {
             countLabel.setText(done + " / " + tasks.size() + " tache(s) terminee(s)");
         }
 
+        Task previouslySelected = taskListView.getSelectionModel().getSelectedItem();
+        String previouslySelectedId = previouslySelected != null ? previouslySelected.getId() : null;
+
         taskListView.getItems().setAll(tasks);
+
+        if (previouslySelectedId != null) {
+            tasks.stream()
+                    .filter(t -> previouslySelectedId.equals(t.getId()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            t -> taskListView.getSelectionModel().select(t),
+                            () -> showTaskDetail(null));
+        } else {
+            showTaskDetail(null);
+        }
+    }
+
+    /** Displays the given task's full detail in the right-hand panel, or a placeholder when null. */
+    private void showTaskDetail(Task task) {
+        boolean hasSelection = task != null;
+        detailPlaceholder.setVisible(!hasSelection);
+        detailPlaceholder.setManaged(!hasSelection);
+        detailContent.setVisible(hasSelection);
+        detailContent.setManaged(hasSelection);
+
+        if (!hasSelection) {
+            return;
+        }
+
+        detailTitleLabel.setText(task.getTitle());
+        detailDateLabel.setText(capitalize(task.getDate().format(DAY_FORMAT)));
+        detailStatusLabel.setText(task.isCompleted() ? "Terminee" : "En cours");
+        detailStatusLabel.getStyleClass().removeAll("status-done", "status-pending");
+        detailStatusLabel.getStyleClass().add(task.isCompleted() ? "status-done" : "status-pending");
+        String description = task.getDescription();
+        detailDescriptionLabel.setText(
+                description == null || description.isBlank() ? "(Aucune description)" : description);
     }
 
     private void showInfo(String message) {

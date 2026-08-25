@@ -79,3 +79,61 @@
     -fx-background-color: transparent;
     -fx-cursor: hand;
 }
+
+.detail-pane {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent transparent #e5e7eb;
+    -fx-border-width: 1;
+}
+
+.detail-placeholder {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+}
+
+.detail-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.detail-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.detail-status {
+    -fx-background-radius: 10;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.detail-status.status-pending {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+}
+
+.detail-status.status-done {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #065f46;
+}
+
+.detail-section-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #9ca3af;
+}
+
+.detail-description {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.detail-description-scroll {
+    -fx-background-color: transparent;
+}
+
+.detail-description-scroll > .viewport {
+    -fx-background-color: transparent;
+}
