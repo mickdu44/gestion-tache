@@ -2,10 +2,16 @@ package com.gestiontache.controller;
 
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Task;
+import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -22,6 +28,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -160,6 +167,44 @@ public class MainController {
         } else {
             showInfo(moved + " tache(s) reportee(s) au lendemain.");
         }
+    }
+
+    @FXML
+    private void onShowStatistics() {
+        TaskStatistics stats = taskService.computeStatistics(LocalDate.now(), 7);
+
+        Label totalLabel = new Label("Total : " + stats.totalTasks() + " tache(s)");
+        Label completedLabel = new Label(String.format(Locale.FRENCH, "Terminees : %d (%.0f%%)",
+                stats.completedTasks(), stats.completionRate() * 100));
+        totalLabel.getStyleClass().add("stats-summary");
+        completedLabel.getStyleClass().add("stats-summary");
+
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setForceZeroInRange(true);
+        BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
+        chart.setTitle("Taches terminees - 7 derniers jours");
+        chart.setLegendVisible(false);
+        chart.setAnimated(false);
+
+        DateTimeFormatter dayFormat = DateTimeFormatter.ofPattern("EEE dd/MM", Locale.FRENCH);
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        for (Map.Entry<LocalDate, Long> entry : stats.completedPerDay().entrySet()) {
+            series.getData().add(new XYChart.Data<>(capitalize(entry.getKey().format(dayFormat)), entry.getValue()));
+        }
+        chart.getData().add(series);
+
+        VBox content = new VBox(12, totalLabel, completedLabel, chart);
+        content.setPadding(new Insets(16));
+        content.setPrefWidth(480);
+        content.setPrefHeight(380);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Statistiques");
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+        dialog.showAndWait();
     }
 
     private void onToggleCompleted(Task task, boolean completed) {

@@ -1,11 +1,14 @@
 package com.gestiontache.service;
 
 import com.gestiontache.model.Task;
+import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -122,6 +125,27 @@ public class TaskService {
                 .mapToInt(Task::getOrder)
                 .max()
                 .orElse(-1) + 1;
+    }
+
+    /**
+     * Completion statistics: overall totals, plus a day-by-day count of
+     * completed tasks over the {@code trailingDays} days up to and including
+     * {@code today} (oldest first).
+     */
+    public TaskStatistics computeStatistics(LocalDate today, int trailingDays) {
+        int total = tasks.size();
+        int completed = (int) tasks.stream().filter(Task::isCompleted).count();
+
+        Map<LocalDate, Long> completedPerDay = new LinkedHashMap<>();
+        for (int i = trailingDays - 1; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
+            long count = tasks.stream()
+                    .filter(t -> t.isCompleted() && day.equals(t.getDate()))
+                    .count();
+            completedPerDay.put(day, count);
+        }
+
+        return new TaskStatistics(total, completed, completedPerDay);
     }
 
     private void persist() {

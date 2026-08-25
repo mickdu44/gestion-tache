@@ -172,3 +172,8 @@
 .detail-description-scroll > .viewport {
     -fx-background-color: transparent;
 }
+
+.stats-summary {
+    -fx-font-size: 14px;
+    -fx-text-fill: #1f2937;
+}

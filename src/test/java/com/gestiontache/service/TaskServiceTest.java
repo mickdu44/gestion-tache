@@ -2,6 +2,7 @@ package com.gestiontache.service;
 
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Task;
+import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,6 +116,50 @@ class TaskServiceTest {
                 tasksForToday.stream().filter(t -> t.getId().equals(task.getId())).findFirst().orElseThrow().getPriority());
         assertEquals(Priority.HAUTE,
                 tasksForToday.stream().filter(t -> t.getId().equals(urgent.getId())).findFirst().orElseThrow().getPriority());
+    }
+
+    @Test
+    void computeStatisticsCountsTotalsAndCompletionRate() {
+        Task done = new Task("Tache faite", "", today);
+        done.setCompleted(true);
+        Task pending = new Task("Tache en cours", "", today);
+        service.addTask(done);
+        service.addTask(pending);
+
+        TaskStatistics stats = service.computeStatistics(today, 7);
+
+        assertEquals(2, stats.totalTasks());
+        assertEquals(1, stats.completedTasks());
+        assertEquals(0.5, stats.completionRate());
+    }
+
+    @Test
+    void computeStatisticsReturnsZeroRateWhenNoTasks() {
+        TaskStatistics stats = service.computeStatistics(today, 7);
+
+        assertEquals(0, stats.totalTasks());
+        assertEquals(0.0, stats.completionRate());
+    }
+
+    @Test
+    void computeStatisticsBucketsCompletedTasksByTheirOwnDateOldestFirst() {
+        Task threeDaysAgo = new Task("Tache 1", "", today.minusDays(3));
+        threeDaysAgo.setCompleted(true);
+        Task yesterday = new Task("Tache 2", "", today.minusDays(1));
+        yesterday.setCompleted(true);
+        Task notCompletedToday = new Task("Tache 3", "", today);
+        service.addTask(threeDaysAgo);
+        service.addTask(yesterday);
+        service.addTask(notCompletedToday);
+
+        TaskStatistics stats = service.computeStatistics(today, 7);
+        List<LocalDate> orderedDays = new ArrayList<>(stats.completedPerDay().keySet());
+
+        assertEquals(today.minusDays(6), orderedDays.get(0));
+        assertEquals(today, orderedDays.get(orderedDays.size() - 1));
+        assertEquals(1L, stats.completedPerDay().get(today.minusDays(3)));
+        assertEquals(1L, stats.completedPerDay().get(today.minusDays(1)));
+        assertEquals(0L, stats.completedPerDay().get(today));
     }
 
     @Test
