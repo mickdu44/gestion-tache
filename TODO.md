@@ -5,8 +5,8 @@ Liste des evolutions et corrections envisagees pour l'application.
 ## Evolutions fonctionnelles
 
 - [ ] Priorites / etiquettes (haute, moyenne, basse ; categories personnalisees) sur les taches.
+- [ ] text enrichi dans la description des tâches
 - [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
-- [ ] Heure et rappel/notification pour une tache (au-dela de la simple date).
 - [ ] Vue "semaine" ou "liste de toutes les taches en retard" en plus de la vue par jour.
 - [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
 - [ ] Statistiques simples (taches terminees par jour/semaine, taux de completion).
