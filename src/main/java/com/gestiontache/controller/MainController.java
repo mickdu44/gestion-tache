@@ -4,6 +4,7 @@ import com.gestiontache.model.Priority;
 import com.gestiontache.model.Task;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
+import com.gestiontache.util.TaskCsvIO;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -16,8 +17,18 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -165,6 +176,49 @@ public class MainController {
     private void onToggleCompleted(Task task, boolean completed) {
         taskService.setCompleted(task, completed);
         refresh();
+    }
+
+    @FXML
+    private void onExport() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Exporter les taches en CSV");
+        chooser.setInitialFileName("taches.csv");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier CSV", "*.csv"));
+        File file = chooser.showSaveDialog(getWindow());
+        if (file == null) {
+            return;
+        }
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+            TaskCsvIO.export(taskService.getAllTasks(), writer);
+            showInfo("Export termine : " + file.getName());
+        } catch (IOException e) {
+            showError("Impossible d'exporter les taches : " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onImport() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Importer des taches depuis un CSV");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier CSV", "*.csv"));
+        File file = chooser.showOpenDialog(getWindow());
+        if (file == null) {
+            return;
+        }
+        try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+            List<Task> imported = TaskCsvIO.importFrom(reader);
+            for (Task task : imported) {
+                taskService.addTask(task);
+            }
+            refresh();
+            showInfo(imported.size() + " tache(s) importee(s).");
+        } catch (IOException e) {
+            showError("Impossible d'importer le fichier : " + e.getMessage());
+        }
+    }
+
+    private Window getWindow() {
+        return taskListView.getScene().getWindow();
     }
 
     private void onEditTask(Task task) {
@@ -338,6 +392,14 @@ public class MainController {
 
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Gestion des taches");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Gestion des taches");
         alert.setHeaderText(null);
         alert.setContentText(message);
