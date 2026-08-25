@@ -1,5 +1,6 @@
 package com.gestiontache.service;
 
+import com.gestiontache.model.Priority;
 import com.gestiontache.model.Task;
 import com.gestiontache.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,6 +97,24 @@ class TaskServiceTest {
         assertTrue(second.getOrder() > first.getOrder());
         assertEquals(List.of(first.getId(), second.getId()),
                 service.getTasksForDate(today).stream().map(Task::getId).toList());
+    }
+
+    @Test
+    void defaultPriorityIsMoyenneAndSurvivesPersistence() {
+        Task task = new Task("Tache par defaut", "", today);
+        assertEquals(Priority.MOYENNE, task.getPriority());
+
+        Task urgent = new Task("Tache urgente", "", today);
+        urgent.setPriority(Priority.HAUTE);
+        service.addTask(task);
+        service.addTask(urgent);
+
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("tasks.json")));
+        List<Task> tasksForToday = reloaded.getTasksForDate(today);
+        assertEquals(Priority.MOYENNE,
+                tasksForToday.stream().filter(t -> t.getId().equals(task.getId())).findFirst().orElseThrow().getPriority());
+        assertEquals(Priority.HAUTE,
+                tasksForToday.stream().filter(t -> t.getId().equals(urgent.getId())).findFirst().orElseThrow().getPriority());
     }
 
     @Test

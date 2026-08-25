@@ -72,6 +72,28 @@
     -fx-text-fill: #374151;
 }
 
+.priority-badge {
+    -fx-background-radius: 10;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.priority-badge.priority-haute {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+}
+
+.priority-badge.priority-moyenne {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+}
+
+.priority-badge.priority-basse {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e40af;
+}
+
 .bottom-bar {
     -fx-background-color: #ffffff;
     -fx-border-color: #e5e7eb transparent transparent transparent;

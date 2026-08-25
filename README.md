@@ -9,7 +9,14 @@ ne quitte la machine : tout est stocke en local.
 - **Vue par jour** : navigation entre les jours (precedent / suivant /
   aujourd'hui) pour afficher les taches du jour selectionne.
 - **Ajout / modification / suppression** de taches (titre, description,
-  date), avec case a cocher pour marquer une tache comme terminee.
+  priorite, date), avec case a cocher pour marquer une tache comme terminee.
+- **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
+  affiche sous forme de badge colore dans la liste et le detail, et
+  filtrable via le menu deroulant de la barre du haut.
+- **Detail de tache** : cliquer sur une tache affiche son detail complet
+  (titre, date, statut, priorite, description) dans un panneau a droite.
+- **Classement manuel** : dans la vue par jour (sans filtre de priorite),
+  les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Report des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;

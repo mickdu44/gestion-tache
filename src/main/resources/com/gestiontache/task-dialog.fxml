@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
@@ -27,8 +28,10 @@
             <Label text="Description" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
             <TextArea fx:id="descriptionArea" GridPane.rowIndex="1" GridPane.columnIndex="1"
                       prefRowCount="5" wrapText="true"/>
-            <Label text="Date" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="datePicker" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="Priorite" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="priorityComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label text="Date" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="datePicker" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
         </GridPane>
     </content>
     <buttonTypes>

@@ -1,6 +1,8 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.model.Priority;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -16,11 +18,20 @@ public class TaskDialogController {
     private TextArea descriptionArea;
 
     @FXML
+    private ComboBox<Priority> priorityComboBox;
+
+    @FXML
     private DatePicker datePicker;
 
-    public void fill(String title, String description, LocalDate date) {
+    @FXML
+    private void initialize() {
+        priorityComboBox.getItems().setAll(Priority.values());
+    }
+
+    public void fill(String title, String description, Priority priority, LocalDate date) {
         titleField.setText(title == null ? "" : title);
         descriptionArea.setText(description == null ? "" : description);
+        priorityComboBox.setValue(priority == null ? Priority.MOYENNE : priority);
         datePicker.setValue(date);
     }
 
@@ -34,6 +45,10 @@ public class TaskDialogController {
 
     public String getDescription() {
         return descriptionArea.getText().trim();
+    }
+
+    public Priority getPriority() {
+        return priorityComboBox.getValue();
     }
 
     public LocalDate getDate() {

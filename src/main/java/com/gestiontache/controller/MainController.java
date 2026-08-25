@@ -1,5 +1,6 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.model.Priority;
 import com.gestiontache.model.Task;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
@@ -8,6 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
@@ -21,12 +23,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MainController {
 
     private static final DateTimeFormatter DAY_FORMAT =
             DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.FRENCH);
+    private static final String ALL_PRIORITIES = "Toutes priorites";
 
+    @FXML
+    private ComboBox<String> priorityFilterCombo;
     @FXML
     private Label dateLabel;
     @FXML
@@ -56,6 +62,8 @@ public class MainController {
     @FXML
     private Label detailStatusLabel;
     @FXML
+    private Label detailPriorityLabel;
+    @FXML
     private Label detailDescriptionLabel;
 
     private TaskService taskService;
@@ -66,8 +74,16 @@ public class MainController {
         taskService = new TaskService(new TaskRepository());
         currentDate = LocalDate.now();
 
+        priorityFilterCombo.getItems().add(ALL_PRIORITIES);
+        for (Priority priority : Priority.values()) {
+            priorityFilterCombo.getItems().add(priority.toString());
+        }
+        priorityFilterCombo.setValue(ALL_PRIORITIES);
+        priorityFilterCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
+
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, isSearching(), this::onTasksReordered));
+                this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
+                isSearching(), isReorderEnabled(), this::onTasksReordered));
 
         taskListView.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
@@ -172,10 +188,19 @@ public class MainController {
 
     /** Called after a drag-and-drop move within the day view; persists the new manual order. */
     private void onTasksReordered() {
-        if (isSearching()) {
+        if (!isReorderEnabled()) {
             return;
         }
         taskService.reorderTasksForDate(currentDate, taskListView.getItems());
+    }
+
+    /**
+     * Manual reordering only makes sense when browsing a single day with no
+     * priority filter applied (otherwise the list view holds a subset of the
+     * day's tasks, and a drag-and-drop move could not be persisted meaningfully).
+     */
+    private boolean isReorderEnabled() {
+        return !isSearching() && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
     }
 
     /**
@@ -191,6 +216,7 @@ public class MainController {
             controller.fill(
                     existing != null ? existing.getTitle() : null,
                     existing != null ? existing.getDescription() : null,
+                    existing != null ? existing.getPriority() : Priority.MOYENNE,
                     existing != null ? existing.getDate() : defaultDate);
 
             Dialog<Task> dialog = new Dialog<>();
@@ -205,10 +231,13 @@ public class MainController {
                     return null;
                 }
                 if (existing == null) {
-                    return new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
+                    Task task = new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
+                    task.setPriority(controller.getPriority());
+                    return task;
                 }
                 existing.setTitle(controller.getTitle());
                 existing.setDescription(controller.getDescription());
+                existing.setPriority(controller.getPriority());
                 existing.setDate(controller.getDate());
                 return existing;
             });
@@ -231,17 +260,30 @@ public class MainController {
         reportButton.setDisable(searching);
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, searching, this::onTasksReordered));
+                this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
+                searching, isReorderEnabled(), this::onTasksReordered));
 
         List<Task> tasks;
         if (searching) {
             String keyword = searchField.getText();
             tasks = taskService.search(keyword);
+        } else {
+            tasks = taskService.getTasksForDate(currentDate);
+        }
+
+        String priorityFilter = priorityFilterCombo.getValue();
+        if (priorityFilter != null && !ALL_PRIORITIES.equals(priorityFilter)) {
+            tasks = tasks.stream()
+                    .filter(t -> priorityFilter.equals(t.getPriority().toString()))
+                    .collect(Collectors.toList());
+        }
+
+        if (searching) {
+            String keyword = searchField.getText();
             dateLabel.setText("Resultats de recherche");
             statusLabel.setText("\"" + keyword.trim() + "\" trouve dans le titre ou la description");
             countLabel.setText(tasks.size() + " tache(s) trouvee(s)");
         } else {
-            tasks = taskService.getTasksForDate(currentDate);
             String label = capitalize(currentDate.format(DAY_FORMAT));
             if (currentDate.isEqual(LocalDate.now())) {
                 label += " (aujourd'hui)";
@@ -286,6 +328,9 @@ public class MainController {
         detailStatusLabel.setText(task.isCompleted() ? "Terminee" : "En cours");
         detailStatusLabel.getStyleClass().removeAll("status-done", "status-pending");
         detailStatusLabel.getStyleClass().add(task.isCompleted() ? "status-done" : "status-pending");
+        detailPriorityLabel.setText(task.getPriority().toString());
+        detailPriorityLabel.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
+        detailPriorityLabel.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
         String description = task.getDescription();
         detailDescriptionLabel.setText(
                 description == null || description.isBlank() ? "(Aucune description)" : description);

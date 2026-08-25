@@ -13,7 +13,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
@@ -24,9 +23,10 @@ import java.util.function.Consumer;
 
 /**
  * Renders a single task: a checkbox to mark it done, its title/description,
- * the date it belongs to (shown only while browsing search results) and
- * edit/delete actions. When browsing a single day, rows can be dragged to
- * reorder the tasks manually.
+ * a priority badge, the date it belongs to (shown only while browsing
+ * search results) and edit/delete actions. When browsing a single day
+ * without any priority filter active, rows can be dragged to reorder the
+ * tasks manually.
  */
 public class TaskListCell extends ListCell<Task> {
 
@@ -37,6 +37,7 @@ public class TaskListCell extends ListCell<Task> {
     private final CheckBox doneCheckBox = new CheckBox();
     private final Label titleLabel = new Label();
     private final Label descriptionLabel = new Label();
+    private final Label priorityBadge = new Label();
     private final Label dateBadge = new Label();
     private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
@@ -50,30 +51,32 @@ public class TaskListCell extends ListCell<Task> {
     private final Runnable onReorder;
 
     public TaskListCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit,
-                         Consumer<Task> onDelete, boolean showDateBadge, Runnable onReorder) {
+                         Consumer<Task> onDelete, boolean showDateBadge, boolean reorderEnabled,
+                         Runnable onReorder) {
         this.onToggle = onToggle;
         this.onEdit = onEdit;
         this.onDelete = onDelete;
         this.showDateBadge = showDateBadge;
-        this.reorderEnabled = !showDateBadge;
+        this.reorderEnabled = reorderEnabled;
         this.onReorder = onReorder;
 
         dragHandle.getStyleClass().add("drag-handle");
         titleLabel.getStyleClass().add("task-title");
         descriptionLabel.getStyleClass().add("task-description");
         descriptionLabel.setWrapText(true);
+        priorityBadge.getStyleClass().add("priority-badge");
         dateBadge.getStyleClass().add("task-date-badge");
         editButton.getStyleClass().add("icon-button");
         deleteButton.getStyleClass().add("icon-button");
 
         VBox textBox = new VBox(2, titleLabel, descriptionLabel);
         textBox.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(textBox, Priority.ALWAYS);
+        HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
 
         Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        root = new HBox(10, dragHandle, doneCheckBox, textBox, dateBadge, editButton, deleteButton);
+        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, dateBadge, editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
@@ -183,6 +186,10 @@ public class TaskListCell extends ListCell<Task> {
         descriptionLabel.setText(description == null || description.isBlank() ? "" : description);
         descriptionLabel.setManaged(description != null && !description.isBlank());
         descriptionLabel.setVisible(description != null && !description.isBlank());
+
+        priorityBadge.setText(task.getPriority().toString());
+        priorityBadge.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
+        priorityBadge.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
 
         if (showDateBadge && task.getDate() != null) {
             dateBadge.setText(task.getDate().format(DATE_BADGE_FORMAT));

@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
@@ -25,6 +26,7 @@
                 <Label fx:id="dateLabel" styleClass="date-label"/>
                 <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
                 <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
+                <ComboBox fx:id="priorityFilterCombo"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>
                 <Button fx:id="clearSearchButton" text="✕" onAction="#onClearSearch" styleClass="icon-button"/>
@@ -47,6 +49,7 @@
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label fx:id="detailDateLabel" styleClass="detail-date"/>
                     <Label fx:id="detailStatusLabel" styleClass="detail-status"/>
+                    <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
                 </HBox>
                 <Separator/>
                 <Label text="Description" styleClass="detail-section-title"/>

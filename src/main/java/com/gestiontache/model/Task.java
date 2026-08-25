@@ -17,6 +17,7 @@ public class Task {
     private boolean completed;
     private LocalDateTime createdAt;
     private int order;
+    private Priority priority = Priority.MOYENNE;
 
     public Task() {
         // Required for JSON deserialization.
@@ -87,6 +88,14 @@ public class Task {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 
     /**
