@@ -16,6 +16,7 @@ public class Task {
     private LocalDate date;
     private boolean completed;
     private LocalDateTime createdAt;
+    private int order;
 
     public Task() {
         // Required for JSON deserialization.
@@ -28,6 +29,7 @@ public class Task {
         this.date = date;
         this.completed = false;
         this.createdAt = LocalDateTime.now();
+        this.order = 0;
     }
 
     public String getId() {
@@ -76,6 +78,15 @@ public class Task {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /** Manual rank among the tasks of the same day, used for drag-and-drop ordering. */
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     /**

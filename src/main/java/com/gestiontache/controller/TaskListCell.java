@@ -1,6 +1,7 @@
 package com.gestiontache.controller;
 
 import com.gestiontache.model.Task;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -8,6 +9,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -21,13 +25,15 @@ import java.util.function.Consumer;
 /**
  * Renders a single task: a checkbox to mark it done, its title/description,
  * the date it belongs to (shown only while browsing search results) and
- * edit/delete actions.
+ * edit/delete actions. When browsing a single day, rows can be dragged to
+ * reorder the tasks manually.
  */
 public class TaskListCell extends ListCell<Task> {
 
     private static final DateTimeFormatter DATE_BADGE_FORMAT =
             DateTimeFormatter.ofPattern("d MMM yyyy", Locale.FRENCH);
 
+    private final Label dragHandle = new Label("≡");
     private final CheckBox doneCheckBox = new CheckBox();
     private final Label titleLabel = new Label();
     private final Label descriptionLabel = new Label();
@@ -40,14 +46,19 @@ public class TaskListCell extends ListCell<Task> {
     private final Consumer<Task> onEdit;
     private final Consumer<Task> onDelete;
     private final boolean showDateBadge;
+    private final boolean reorderEnabled;
+    private final Runnable onReorder;
 
     public TaskListCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit,
-                         Consumer<Task> onDelete, boolean showDateBadge) {
+                         Consumer<Task> onDelete, boolean showDateBadge, Runnable onReorder) {
         this.onToggle = onToggle;
         this.onEdit = onEdit;
         this.onDelete = onDelete;
         this.showDateBadge = showDateBadge;
+        this.reorderEnabled = !showDateBadge;
+        this.onReorder = onReorder;
 
+        dragHandle.getStyleClass().add("drag-handle");
         titleLabel.getStyleClass().add("task-title");
         descriptionLabel.getStyleClass().add("task-description");
         descriptionLabel.setWrapText(true);
@@ -62,10 +73,13 @@ public class TaskListCell extends ListCell<Task> {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        root = new HBox(10, doneCheckBox, textBox, dateBadge, editButton, deleteButton);
+        root = new HBox(10, dragHandle, doneCheckBox, textBox, dateBadge, editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
+
+        dragHandle.setVisible(reorderEnabled);
+        dragHandle.setManaged(reorderEnabled);
 
         doneCheckBox.setOnAction(e -> {
             Task task = getItem();
@@ -84,6 +98,68 @@ public class TaskListCell extends ListCell<Task> {
             if (task != null) {
                 this.onDelete.accept(task);
             }
+        });
+
+        if (reorderEnabled) {
+            setupDragAndDrop();
+        }
+    }
+
+    private void setupDragAndDrop() {
+        root.setOnDragDetected(event -> {
+            if (getItem() == null) {
+                return;
+            }
+            Dragboard dragboard = root.startDragAndDrop(TransferMode.MOVE);
+            dragboard.setDragView(root.snapshot(null, null));
+            ClipboardContent content = new ClipboardContent();
+            content.putString(String.valueOf(getIndex()));
+            dragboard.setContent(content);
+            event.consume();
+        });
+
+        root.setOnDragOver(event -> {
+            if (event.getGestureSource() != root && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+            event.consume();
+        });
+
+        root.setOnDragEntered(event -> {
+            if (event.getGestureSource() != root && event.getDragboard().hasString()) {
+                root.getStyleClass().add("task-row-drag-over");
+            }
+        });
+
+        root.setOnDragExited(event -> root.getStyleClass().remove("task-row-drag-over"));
+
+        root.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            boolean success = false;
+            if (dragboard.hasString()) {
+                int draggedIndex = Integer.parseInt(dragboard.getString());
+                int targetIndex = getIndex();
+                ObservableList<Task> items = getListView().getItems();
+                if (draggedIndex >= 0 && draggedIndex < items.size()
+                        && targetIndex >= 0 && targetIndex < items.size()
+                        && draggedIndex != targetIndex) {
+                    Task dragged = items.remove(draggedIndex);
+                    int insertIndex = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex;
+                    items.add(insertIndex, dragged);
+                    getListView().getSelectionModel().select(dragged);
+                    success = true;
+                    if (onReorder != null) {
+                        onReorder.run();
+                    }
+                }
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        root.setOnDragDone(event -> {
+            root.getStyleClass().remove("task-row-drag-over");
+            event.consume();
         });
     }
 

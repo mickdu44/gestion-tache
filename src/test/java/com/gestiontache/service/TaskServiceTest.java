@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,6 +66,36 @@ class TaskServiceTest {
         List<Task> results = service.search("dupont");
 
         assertEquals(2, results.size());
+    }
+
+    @Test
+    void reorderTasksForDatePersistsManualOrder() {
+        Task first = new Task("Preparer le café", "", today);
+        Task second = new Task("Repondre aux mails", "", today);
+        Task third = new Task("Rediger le compte-rendu", "", today);
+        service.addTask(first);
+        service.addTask(second);
+        service.addTask(third);
+
+        // Simulates a drag-and-drop: move "third" to the front.
+        List<Task> newOrder = new ArrayList<>(List.of(third, first, second));
+        service.reorderTasksForDate(today, newOrder);
+
+        List<Task> result = service.getTasksForDate(today);
+        assertEquals(List.of(third.getId(), first.getId(), second.getId()),
+                result.stream().map(Task::getId).toList());
+    }
+
+    @Test
+    void newTaskIsAppendedAfterExistingOnesOfTheSameDay() {
+        Task first = new Task("Tache A", "", today);
+        Task second = new Task("Tache B", "", today);
+        service.addTask(first);
+        service.addTask(second);
+
+        assertTrue(second.getOrder() > first.getOrder());
+        assertEquals(List.of(first.getId(), second.getId()),
+                service.getTasksForDate(today).stream().map(Task::getId).toList());
     }
 
     @Test

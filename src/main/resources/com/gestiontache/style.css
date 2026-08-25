@@ -35,6 +35,19 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 1);
 }
 
+.task-row-drag-over {
+    -fx-border-color: #2563eb;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-radius: 8;
+}
+
+.drag-handle {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 14px;
+    -fx-cursor: move;
+    -fx-padding: 0 2 0 0;
+}
+
 .task-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;

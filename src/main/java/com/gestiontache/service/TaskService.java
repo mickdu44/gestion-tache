@@ -25,7 +25,7 @@ public class TaskService {
     public List<Task> getTasksForDate(LocalDate date) {
         return tasks.stream()
                 .filter(t -> date.equals(t.getDate()))
-                .sorted(Comparator.comparing(Task::isCompleted).thenComparing(Task::getCreatedAt))
+                .sorted(Comparator.comparingInt(Task::getOrder).thenComparing(Task::getCreatedAt))
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +44,23 @@ public class TaskService {
     }
 
     public void addTask(Task task) {
+        task.setOrder(nextOrderForDate(task.getDate()));
         tasks.add(task);
+        persist();
+    }
+
+    /**
+     * Applies a new manual order to the tasks of {@code date}, following the
+     * order given by {@code orderedTasks} (typically the list view's items
+     * after a drag-and-drop move).
+     */
+    public void reorderTasksForDate(LocalDate date, List<Task> orderedTasks) {
+        int order = 0;
+        for (Task t : orderedTasks) {
+            if (date.equals(t.getDate())) {
+                t.setOrder(order++);
+            }
+        }
         persist();
     }
 
@@ -72,8 +88,10 @@ public class TaskService {
                 .filter(t -> date.equals(t.getDate()) && !t.isCompleted())
                 .collect(Collectors.toList());
         LocalDate next = date.plusDays(1);
+        int order = nextOrderForDate(next);
         for (Task t : unfinished) {
             t.setDate(next);
+            t.setOrder(order++);
         }
         if (!unfinished.isEmpty()) {
             persist();
@@ -87,13 +105,23 @@ public class TaskService {
      */
     public int reportOverdueToToday(LocalDate today) {
         List<Task> overdue = getOverdueUnfinishedTasks(today);
+        int order = nextOrderForDate(today);
         for (Task t : overdue) {
             t.setDate(today);
+            t.setOrder(order++);
         }
         if (!overdue.isEmpty()) {
             persist();
         }
         return overdue.size();
+    }
+
+    private int nextOrderForDate(LocalDate date) {
+        return tasks.stream()
+                .filter(t -> date.equals(t.getDate()))
+                .mapToInt(Task::getOrder)
+                .max()
+                .orElse(-1) + 1;
     }
 
     private void persist() {

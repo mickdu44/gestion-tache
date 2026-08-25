@@ -67,7 +67,7 @@ public class MainController {
         currentDate = LocalDate.now();
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, isSearching()));
+                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, isSearching(), this::onTasksReordered));
 
         taskListView.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
@@ -170,6 +170,14 @@ public class MainController {
         }
     }
 
+    /** Called after a drag-and-drop move within the day view; persists the new manual order. */
+    private void onTasksReordered() {
+        if (isSearching()) {
+            return;
+        }
+        taskService.reorderTasksForDate(currentDate, taskListView.getItems());
+    }
+
     /**
      * Opens the add/edit dialog. When {@code existing} is null a new task is
      * created and returned on confirmation; otherwise the existing task is
@@ -223,7 +231,7 @@ public class MainController {
         reportButton.setDisable(searching);
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, searching));
+                this::onToggleCompleted, this::onEditTask, this::onDeleteTask, searching, this::onTasksReordered));
 
         List<Task> tasks;
         if (searching) {
