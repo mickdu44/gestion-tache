@@ -59,6 +59,47 @@ Ou, apres un `mvn package`, en executant directement le jar :
 java -jar target/gestion-tache-1.0.0.jar
 ```
 
+## Configuration IDE
+
+Le projet est un module Maven standard (pas de `module-info.java`,
+classpath simple) : n'importe quel IDE qui sait importer un `pom.xml`
+resout automatiquement les dependances JavaFX, aucune configuration
+manuelle de module-path n'est necessaire.
+
+### IntelliJ IDEA
+
+1. `File > Open...` puis selectionner le dossier du projet (le
+   `pom.xml` a la racine est detecte automatiquement).
+2. Attendre la resolution des dependances Maven (barre de progression
+   en bas a droite).
+3. Ouvrir `src/main/java/com/gestiontache/MainApp.java` et cliquer sur
+   le triangle vert a cote de `public static void main` (ou clic droit
+   > `Run 'MainApp.main()'`).
+4. Pour lancer les tests : clic droit sur `src/test/java` >
+   `Run 'All Tests'`, ou l'onglet Maven > `Lifecycle > test`.
+
+### Visual Studio Code
+
+1. Installer les extensions **Extension Pack for Java** et
+   **Maven for Java** (toutes deux de Microsoft/Red Hat).
+2. Ouvrir le dossier du projet : VS Code detecte le `pom.xml` et
+   propose d'importer le projet Maven.
+3. Lancer via la palette de commandes `Maven: Execute Commands` >
+   `javafx:run`, ou depuis un terminal integre avec `mvn javafx:run`.
+4. Lancer directement `MainApp` depuis l'explorateur Java n'est
+   possible qu'apres un premier `mvn compile` (pour que les
+   dependances JavaFX soient indexees).
+
+### Eclipse
+
+1. `File > Import... > Maven > Existing Maven Projects`, selectionner
+   le dossier du projet.
+2. Clic droit sur le projet > `Run As > Maven build...`, avec comme
+   Goals `javafx:run`.
+3. Pour un lancement direct de `MainApp`, s'assurer que le plugin
+   **m2e** a bien telecharge les dependances (clic droit sur le
+   projet > `Maven > Update Project`).
+
 ## Donnees
 
 Les taches sont lues/ecrites dans `~/.gestion-tache/tasks.json` au
