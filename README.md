@@ -30,6 +30,11 @@ ne quitte la machine : tout est stocke en local.
   JSON local (`~/.gestion-tache/tasks.json`), sans base de donnees ni
   serveur distant. Chaque modification (ajout, edition, suppression,
   report) est persistee immediatement.
+- **Archivage automatique** : au demarrage, les taches terminees depuis
+  plus de 3 mois sont deplacees vers un fichier d'archive separe
+  (`~/.gestion-tache/tasks-archive.json`) pour garder la liste active
+  legere. Le bouton "Archives" permet de consulter, restaurer ou
+  supprimer definitivement les taches archivees.
 
 ## Prerequis
 
@@ -109,9 +114,12 @@ manuelle de module-path n'est necessaire.
 
 ## Donnees
 
-Les taches sont lues/ecrites dans `~/.gestion-tache/tasks.json` au
-format JSON. Supprimer ce fichier reinitialise l'application (perte de
-toutes les taches).
+Les taches actives sont lues/ecrites dans `~/.gestion-tache/tasks.json`
+au format JSON. Les taches terminees depuis plus de 3 mois sont
+deplacees automatiquement (a chaque demarrage) vers
+`~/.gestion-tache/tasks-archive.json`, consultable via le bouton
+"Archives" de l'application. Supprimer ces fichiers reinitialise
+l'application (perte des taches actives et/ou archivees correspondantes).
 
 ## Structure du projet
 

@@ -13,6 +13,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [ ] Annulation (undo) apres suppression d'une tache.
 - [ ] Theme sombre / clair configurable.
 - [ ] Tri et filtres supplementaires dans les resultats de recherche (par date, par statut).
+- [x] Archivage automatique des taches terminees depuis plus de 3 mois (fichier `tasks-archive.json` separe), avec un ecran "Archives" pour consulter, restaurer ou supprimer definitivement.
 
 ## Corrections / robustesse technique
 

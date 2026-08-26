@@ -21,12 +21,19 @@ public class TaskRepository {
 
     private static final Path DEFAULT_DATA_FILE =
             Paths.get(System.getProperty("user.home"), ".gestion-tache", "tasks.json");
+    private static final Path DEFAULT_ARCHIVE_FILE =
+            Paths.get(System.getProperty("user.home"), ".gestion-tache", "tasks-archive.json");
 
     private final Path dataFile;
     private final ObjectMapper mapper;
 
     public TaskRepository() {
         this(DEFAULT_DATA_FILE);
+    }
+
+    /** Repository for the archive file, kept alongside the main data file. */
+    public static TaskRepository defaultArchive() {
+        return new TaskRepository(DEFAULT_ARCHIVE_FILE);
     }
 
     public TaskRepository(Path dataFile) {
