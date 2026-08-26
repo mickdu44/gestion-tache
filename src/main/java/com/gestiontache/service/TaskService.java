@@ -41,9 +41,11 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    /** Unfinished tasks from days before {@code today}, oldest first. */
     public List<Task> getOverdueUnfinishedTasks(LocalDate today) {
         return tasks.stream()
                 .filter(t -> !t.isCompleted() && t.getDate().isBefore(today))
+                .sorted(Comparator.comparing(Task::getDate).thenComparingInt(Task::getOrder))
                 .collect(Collectors.toList());
     }
 
