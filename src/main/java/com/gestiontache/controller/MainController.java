@@ -171,8 +171,9 @@ public class MainController {
     }
 
     private void onEditTask(Task task) {
+        LocalDate previousDate = task.getDate();
         openTaskDialog(task, task.getDate()).ifPresent(updated -> {
-            taskService.updateTask(updated);
+            taskService.updateTask(updated, previousDate);
             refresh();
         });
     }
