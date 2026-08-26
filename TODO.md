@@ -13,10 +13,11 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [ ] Annulation (undo) apres suppression d'une tache.
 - [ ] Theme sombre / clair configurable.
 - [ ] Tri et filtres supplementaires dans les resultats de recherche (par date, par statut).
+- [x] Stockage journalier : un fichier JSON par jour (`~/.gestion-tache/days/AAAA-MM-JJ.json`) au lieu d'un unique fichier global ; migration automatique depuis l'ancien format au premier lancement.
 
 ## Corrections / robustesse technique
 
-- [ ] Gerer l'acces concurrent au fichier `tasks.json` (verrou ou detection d'ecriture concurrente si plusieurs instances de l'app sont lancees).
+- [ ] Gerer l'acces concurrent aux fichiers journaliers de `~/.gestion-tache/days/` (verrou ou detection d'ecriture concurrente si plusieurs instances de l'app sont lancees).
 - [ ] Sauvegarde/versionning automatique du fichier de donnees (ex. copie horodatee avant chaque ecriture) pour eviter une perte de donnees en cas de fichier corrompu.
 - [ ] Limiter la longueur du titre/description dans le formulaire d'ajout/edition et afficher un message d'erreur explicite en cas de donnees invalides.
 - [ ] Ajouter des tests pour les controleurs JavaFX (actuellement seule la couche `TaskService` est testee).
