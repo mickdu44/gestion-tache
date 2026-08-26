@@ -1,5 +1,6 @@
 package com.gestiontache.service;
 
+import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
@@ -90,9 +91,30 @@ public class TaskService {
         persistDate(date);
     }
 
+    /**
+     * Marks a task done or not. When a task with a recurrence rule
+     * transitions to completed, the next occurrence is created automatically
+     * (not completed) on the corresponding future date.
+     */
     public void setCompleted(Task task, boolean completed) {
+        boolean wasCompleted = task.isCompleted();
         task.setCompleted(completed);
-        persistDate(task.getDate());
+        if (completed && !wasCompleted && task.getRecurrence() != Recurrence.AUCUNE) {
+            Task next = createNextOccurrence(task);
+            persistDates(Set.of(task.getDate(), next.getDate()));
+        } else {
+            persistDate(task.getDate());
+        }
+    }
+
+    private Task createNextOccurrence(Task task) {
+        LocalDate nextDate = task.getRecurrence().nextOccurrence(task.getDate());
+        Task next = new Task(task.getTitle(), task.getDescription(), nextDate);
+        next.setPriority(task.getPriority());
+        next.setRecurrence(task.getRecurrence());
+        next.setOrder(nextOrderForDate(nextDate));
+        tasks.add(next);
+        return next;
     }
 
     /**

@@ -6,7 +6,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 
 - [x] Priorites (haute, moyenne, basse) sur les taches, visibles dans la liste et le detail, filtrables via la barre du haut. Reste a discuter : etiquettes/categories personnalisees au-dela des 3 niveaux fixes.
 - [x] Texte enrichi dans la description des taches (gras, italique, listes a puces).
-- [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
+- [x] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres) : marquer une tache recurrente comme terminee cree automatiquement la prochaine occurrence.
 - [ ] EVO 2 - Vue "semaine" en plus de la vue par jour.
 - [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
 - [x] Statistiques simples : total, taux de completion, et graphique des taches terminees sur les 7 derniers jours.

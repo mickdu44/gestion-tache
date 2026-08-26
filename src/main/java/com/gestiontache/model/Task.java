@@ -20,6 +20,7 @@ public class Task {
     private LocalDateTime createdAt;
     private int order;
     private Priority priority = Priority.MOYENNE;
+    private Recurrence recurrence = Recurrence.AUCUNE;
     private List<SubTask> subtasks = new ArrayList<>();
     private List<String> attachments = new ArrayList<>();
 
@@ -100,6 +101,14 @@ public class Task {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public Recurrence getRecurrence() {
+        return recurrence;
+    }
+
+    public void setRecurrence(Recurrence recurrence) {
+        this.recurrence = recurrence;
     }
 
     public List<SubTask> getSubtasks() {

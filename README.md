@@ -32,6 +32,9 @@ ne quitte la machine : tout est stocke en local.
   progression (ex. "2/5") visible dans la liste.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Taches recurrentes** : une tache peut etre configuree en Quotidienne,
+  Hebdomadaire ou Jours ouvres ; la marquer comme terminee cree
+  automatiquement la prochaine occurrence (non terminee) a la bonne date.
 - **Statistiques** : bouton "Statistiques" affichant le nombre total de
   taches, le taux de completion, et un graphique des taches terminees
   sur les 7 derniers jours.

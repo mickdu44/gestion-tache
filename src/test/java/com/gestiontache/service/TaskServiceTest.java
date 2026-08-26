@@ -1,6 +1,7 @@
 package com.gestiontache.service;
 
 import com.gestiontache.model.Priority;
+import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
@@ -9,11 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TaskServiceTest {
@@ -116,6 +119,73 @@ class TaskServiceTest {
                 tasksForToday.stream().filter(t -> t.getId().equals(task.getId())).findFirst().orElseThrow().getPriority());
         assertEquals(Priority.HAUTE,
                 tasksForToday.stream().filter(t -> t.getId().equals(urgent.getId())).findFirst().orElseThrow().getPriority());
+    }
+
+    @Test
+    void completingADailyRecurringTaskCreatesTomorrowsOccurrence() {
+        Task task = new Task("Arroser les plantes", "", today);
+        task.setRecurrence(Recurrence.QUOTIDIENNE);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        List<Task> tomorrow = service.getTasksForDate(today.plusDays(1));
+        assertEquals(1, tomorrow.size());
+        Task next = tomorrow.get(0);
+        assertEquals("Arroser les plantes", next.getTitle());
+        assertFalse(next.isCompleted());
+        assertEquals(Recurrence.QUOTIDIENNE, next.getRecurrence());
+
+        // Both the completed task's day file and the new occurrence's day
+        // file must be written, not just the former.
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("days")));
+        assertEquals(1, reloaded.getTasksForDate(today.plusDays(1)).size());
+    }
+
+    @Test
+    void completingAWeeklyRecurringTaskSchedulesOneWeekLater() {
+        Task task = new Task("Faire le point hebdo", "", today);
+        task.setRecurrence(Recurrence.HEBDOMADAIRE);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        assertEquals(1, service.getTasksForDate(today.plusWeeks(1)).size());
+    }
+
+    @Test
+    void completingABusinessDayRecurringTaskSkipsWeekends() {
+        LocalDate friday = today.with(DayOfWeek.FRIDAY);
+        Task task = new Task("Backup quotidien", "", friday);
+        task.setRecurrence(Recurrence.JOURS_OUVRES);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        LocalDate monday = friday.plusDays(3);
+        assertEquals(1, service.getTasksForDate(monday).size());
+    }
+
+    @Test
+    void toggleWithoutRecurrenceDoesNotCreateAnyOccurrence() {
+        Task task = new Task("Tache simple", "", today);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        assertEquals(1, service.getTasksForDate(today).size());
+    }
+
+    @Test
+    void reCompletingAnAlreadyCompletedTaskDoesNotDuplicateOccurrences() {
+        Task task = new Task("Pointage quotidien", "", today);
+        task.setRecurrence(Recurrence.QUOTIDIENNE);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+        service.setCompleted(task, true);
+
+        assertEquals(1, service.getTasksForDate(today.plusDays(1)).size());
     }
 
     @Test

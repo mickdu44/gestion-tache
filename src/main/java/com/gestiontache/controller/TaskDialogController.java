@@ -1,6 +1,7 @@
 package com.gestiontache.controller;
 
 import com.gestiontache.model.Priority;
+import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.SubTask;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -37,6 +38,9 @@ public class TaskDialogController {
     private ComboBox<Priority> priorityComboBox;
 
     @FXML
+    private ComboBox<Recurrence> recurrenceComboBox;
+
+    @FXML
     private DatePicker datePicker;
 
     @FXML
@@ -54,6 +58,8 @@ public class TaskDialogController {
     @FXML
     private void initialize() {
         priorityComboBox.getItems().setAll(Priority.values());
+        recurrenceComboBox.getItems().setAll(Recurrence.values());
+
         Tooltip markdownHint = new Tooltip(
                 "Mise en forme prise en charge : **gras**, *italique*, \"- \" pour une liste, [texte](url) pour un lien.");
         markdownHint.setShowDelay(javafx.util.Duration.millis(200));
@@ -61,11 +67,12 @@ public class TaskDialogController {
         descriptionArea.setPromptText("Astuce : **gras**, *italique*, \"- \" pour une liste, [texte](url) pour un lien.");
     }
 
-    public void fill(String title, String description, Priority priority, LocalDate date,
+    public void fill(String title, String description, Priority priority, Recurrence recurrence, LocalDate date,
                       List<SubTask> existingSubtasks, List<String> existingAttachments) {
         titleField.setText(title == null ? "" : title);
         descriptionArea.setText(description == null ? "" : description);
         priorityComboBox.setValue(priority == null ? Priority.MOYENNE : priority);
+        recurrenceComboBox.setValue(recurrence == null ? Recurrence.AUCUNE : recurrence);
         datePicker.setValue(date);
 
         subtasks.clear();
@@ -101,6 +108,10 @@ public class TaskDialogController {
 
     public Priority getPriority() {
         return priorityComboBox.getValue();
+    }
+
+    public Recurrence getRecurrence() {
+        return recurrenceComboBox.getValue();
     }
 
     public LocalDate getDate() {
