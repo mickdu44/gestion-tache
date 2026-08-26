@@ -9,7 +9,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
 - [ ] Vue "semaine" ou "liste de toutes les taches en retard" en plus de la vue par jour.
 - [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
-- [ ] Statistiques simples (taches terminees par jour/semaine, taux de completion).
+- [x] Statistiques simples : total, taux de completion, et graphique des taches terminees sur les 7 derniers jours.
 - [ ] Annulation (undo) apres suppression d'une tache.
 - [ ] Theme sombre / clair configurable.
 - [ ] Tri et filtres supplementaires dans les resultats de recherche (par date, par statut).

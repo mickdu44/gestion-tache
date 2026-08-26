@@ -20,6 +20,9 @@ ne quitte la machine : tout est stocke en local.
   liste a puces — rendue dans le panneau de detail.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Statistiques** : bouton "Statistiques" affichant le nombre total de
+  taches, le taux de completion, et un graphique des taches terminees
+  sur les 7 derniers jours.
 - **Report des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;
