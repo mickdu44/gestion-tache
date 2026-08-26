@@ -3,12 +3,15 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -28,6 +31,15 @@
                 <Label fx:id="dateLabel" styleClass="date-label"/>
                 <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
                 <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
+                <DatePicker fx:id="datePickerNav"/>
+                <ToggleButton fx:id="dayViewButton" text="Jour" selected="true" styleClass="view-toggle">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="viewModeGroup"/>
+                    </toggleGroup>
+                </ToggleButton>
+                <ToggleButton fx:id="weekViewButton" text="Semaine" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER_LEFT">
                 <ComboBox fx:id="priorityFilterCombo"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>

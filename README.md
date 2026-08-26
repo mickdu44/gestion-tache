@@ -8,6 +8,14 @@ ne quitte la machine : tout est stocke en local.
 
 - **Vue par jour** : navigation entre les jours (precedent / suivant /
   aujourd'hui) pour afficher les taches du jour selectionne.
+- **Vue semaine** : bascule "Jour" / "Semaine" dans la barre du haut pour
+  afficher les taches de toute une semaine (lundi a dimanche) au lieu d'un
+  seul jour, chaque tache affichant un badge avec sa date. Les boutons
+  precedent/suivant avancent alors d'une semaine entiere.
+- **Calendrier de selection** : un champ de date dans la barre du haut
+  permet de sauter directement a n'importe quel jour (ou a la semaine qui
+  le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
+  precedent/suivant.
 - **Ajout / modification / suppression** de taches (titre, description,
   priorite, date), avec case a cocher pour marquer une tache comme terminee.
 - **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
