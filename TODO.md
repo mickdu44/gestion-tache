@@ -14,6 +14,10 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [ ] Theme sombre / clair configurable.
 - [ ] Tri et filtres supplementaires dans les resultats de recherche (par date, par statut).
 - [x] Archivage automatique des taches terminees depuis plus de 3 mois (repertoire `~/.gestion-tache/archive-days/` separe, un fichier JSON par jour comme pour les taches actives), avec un ecran "Archives" pour consulter, restaurer ou supprimer definitivement.
+- [ ] Supprimer le tag en cours et agrandir l'affichage latéral pour la description sur la moitié de l'écran
+- [ ] Afficher des boutons pour facilité la mise en page du texte enrichie et ajouter la possibilité de mettre un lien url et une pièce jointe
+- [ ] Sous-taches / checklist a l'interieur d'une tache.
+- [ ] Les tâches non terminées sont automatiquement reportées au lendemain
 - [x] Stockage journalier : un fichier JSON par jour (`~/.gestion-tache/days/AAAA-MM-JJ.json`) au lieu d'un unique fichier global ; migration automatique depuis l'ancien format au premier lancement.
 
 ## Corrections / robustesse technique
@@ -29,4 +33,4 @@ Liste des evolutions et corrections envisagees pour l'application.
 ## Idees a discuter
 
 - [ ] Synchronisation optionnelle entre plusieurs machines (fichier partage, cloud) tout en gardant le stockage local par defaut.
-- [ ] Sous-taches / checklist a l'interieur d'une tache.
+
