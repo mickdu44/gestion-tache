@@ -1,6 +1,7 @@
 package com.gestiontache.controller;
 
 import com.gestiontache.model.Task;
+import com.gestiontache.util.DescriptionFormatter;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -183,9 +184,16 @@ public class TaskListCell extends ListCell<Task> {
         }
 
         String description = task.getDescription();
-        descriptionLabel.setText(description == null || description.isBlank() ? "" : description);
-        descriptionLabel.setManaged(description != null && !description.isBlank());
-        descriptionLabel.setVisible(description != null && !description.isBlank());
+        boolean hasDescription = description != null && !description.isBlank();
+        if (hasDescription) {
+            String plain = DescriptionFormatter.toPlainText(description);
+            int newline = plain.indexOf('\n');
+            descriptionLabel.setText(newline >= 0 ? plain.substring(0, newline) + " …" : plain);
+        } else {
+            descriptionLabel.setText("");
+        }
+        descriptionLabel.setManaged(hasDescription);
+        descriptionLabel.setVisible(hasDescription);
 
         priorityBadge.setText(task.getPriority().toString());
         priorityBadge.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));

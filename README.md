@@ -15,6 +15,9 @@ ne quitte la machine : tout est stocke en local.
   filtrable via le menu deroulant de la barre du haut.
 - **Detail de tache** : cliquer sur une tache affiche son detail complet
   (titre, date, statut, priorite, description) dans un panneau a droite.
+- **Texte enrichi** : la description accepte une mise en forme simple —
+  `**gras**`, `*italique*` et des lignes commencant par `- ` pour une
+  liste a puces — rendue dans le panneau de detail.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Report des taches non terminees** :

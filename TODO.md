@@ -5,7 +5,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 ## Evolutions fonctionnelles
 
 - [x] Priorites (haute, moyenne, basse) sur les taches, visibles dans la liste et le detail, filtrables via la barre du haut. Reste a discuter : etiquettes/categories personnalisees au-dela des 3 niveaux fixes.
-- [ ] text enrichi dans la description des tâches
+- [x] Texte enrichi dans la description des taches (gras, italique, listes a puces).
 - [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
 - [ ] Vue "semaine" ou "liste de toutes les taches en retard" en plus de la vue par jour.
 - [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
