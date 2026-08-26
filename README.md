@@ -14,21 +14,32 @@ ne quitte la machine : tout est stocke en local.
   affiche sous forme de badge colore dans la liste et le detail, et
   filtrable via le menu deroulant de la barre du haut.
 - **Detail de tache** : cliquer sur une tache affiche son detail complet
-  (titre, date, statut, priorite, description) dans un panneau a droite.
+  (titre, date, priorite, description, sous-taches, pieces jointes) dans
+  un panneau lateral qui occupe la moitie de la fenetre.
 - **Texte enrichi** : la description accepte une mise en forme simple —
-  `**gras**`, `*italique*` et des lignes commencant par `- ` pour une
-  liste a puces — rendue dans le panneau de detail.
+  `**gras**`, `*italique*`, des lignes commencant par `- ` pour une liste
+  a puces, et `[texte](url)` pour un lien cliquable — rendue dans le
+  panneau de detail. Une petite barre d'outils dans le formulaire
+  d'ajout/edition (boutons G, I, Liste, Lien) insere cette syntaxe sans
+  avoir a la taper a la main.
+- **Pieces jointes** : chaque tache peut avoir un ou plusieurs fichiers
+  locaux attaches (bouton "Ajouter une piece jointe" dans le formulaire) ;
+  ils apparaissent comme des liens cliquables dans le panneau de detail,
+  qui les ouvrent avec l'application par defaut du systeme.
+- **Sous-taches / checklist** : chaque tache peut avoir une liste de
+  sous-taches cochables, ajoutees/supprimees depuis le formulaire et
+  cochees directement depuis le panneau de detail ou depuis un badge de
+  progression (ex. "2/5") visible dans la liste.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Statistiques** : bouton "Statistiques" affichant le nombre total de
   taches, le taux de completion, et un graphique des taches terminees
   sur les 7 derniers jours.
-- **Report des taches non terminees** :
+- **Report automatique des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;
-  - au demarrage, si des taches non terminees de jours precedents
-    existent, l'application propose de les reporter automatiquement a
-    aujourd'hui.
+  - au demarrage, les taches non terminees de jours precedents sont
+    automatiquement reportees a aujourd'hui, sans confirmation requise.
 - **Recherche** : la barre de recherche filtre l'ensemble des taches
   (tous les jours confondus, tous fichiers confondus) dont le **titre**
   ou la **description** contient les mots-cles saisis (insensible a la
@@ -135,13 +146,15 @@ sauvegarde.
 src/main/java/com/gestiontache/
   MainApp.java                     Point d'entree JavaFX
   Launcher.java                    Point d'entree pour le jar shade (java -jar)
-  model/Task.java                  Modele d'une tache
+  model/Task.java, SubTask.java    Modele d'une tache et de ses sous-taches
   repository/TaskRepository.java   Persistance JSON locale (un fichier par jour)
   service/TaskService.java         Logique metier (recherche, report, CRUD)
   controller/                      Controleurs JavaFX (FXML)
+  util/DescriptionFormatter.java   Rendu du texte enrichi (gras, italique, liens)
 src/main/resources/com/gestiontache/
   main.fxml, task-dialog.fxml      Vues
   style.css                        Style de l'application
+  icon.png                         Icone de l'application
 src/test/java/com/gestiontache/    Tests unitaires (JUnit 5)
 ```
 

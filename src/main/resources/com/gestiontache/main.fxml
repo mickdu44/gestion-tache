@@ -7,6 +7,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -36,30 +37,35 @@
         </VBox>
     </top>
     <center>
-        <ListView fx:id="taskListView" BorderPane.alignment="CENTER" styleClass="task-list"/>
-    </center>
-    <right>
-        <VBox fx:id="detailPane" prefWidth="300" minWidth="260" styleClass="detail-pane">
-            <padding>
-                <Insets top="18" right="18" bottom="18" left="18"/>
-            </padding>
-            <Label fx:id="detailPlaceholder" text="Selectionnez une tache dans la liste pour afficher son detail."
-                   wrapText="true" styleClass="detail-placeholder"/>
-            <VBox fx:id="detailContent" spacing="12" visible="false" managed="false" VBox.vgrow="ALWAYS">
-                <Label fx:id="detailTitleLabel" wrapText="true" styleClass="detail-title"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label fx:id="detailDateLabel" styleClass="detail-date"/>
-                    <Label fx:id="detailStatusLabel" styleClass="detail-status"/>
-                    <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
-                </HBox>
-                <Separator/>
-                <Label text="Description" styleClass="detail-section-title"/>
-                <ScrollPane fitToWidth="true" styleClass="detail-description-scroll" VBox.vgrow="ALWAYS">
-                    <TextFlow fx:id="detailDescriptionFlow"/>
-                </ScrollPane>
+        <SplitPane fx:id="mainSplitPane" dividerPositions="0.5" BorderPane.alignment="CENTER">
+            <ListView fx:id="taskListView" minWidth="320" styleClass="task-list"/>
+            <VBox fx:id="detailPane" minWidth="260" styleClass="detail-pane">
+                <padding>
+                    <Insets top="18" right="18" bottom="18" left="18"/>
+                </padding>
+                <Label fx:id="detailPlaceholder" text="Selectionnez une tache dans la liste pour afficher son detail."
+                       wrapText="true" styleClass="detail-placeholder"/>
+                <VBox fx:id="detailContent" spacing="12" visible="false" managed="false" VBox.vgrow="ALWAYS">
+                    <Label fx:id="detailTitleLabel" wrapText="true" styleClass="detail-title"/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label fx:id="detailDateLabel" styleClass="detail-date"/>
+                        <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
+                    </HBox>
+                    <Separator/>
+                    <Label text="Description" styleClass="detail-section-title"/>
+                    <ScrollPane fitToWidth="true" styleClass="detail-description-scroll" VBox.vgrow="ALWAYS">
+                        <TextFlow fx:id="detailDescriptionFlow"/>
+                    </ScrollPane>
+                    <Separator/>
+                    <Label fx:id="detailSubtasksTitle" text="Sous-taches" styleClass="detail-section-title"/>
+                    <VBox fx:id="detailSubtasksBox" spacing="4"/>
+                    <Separator fx:id="detailAttachmentsSeparator"/>
+                    <Label fx:id="detailAttachmentsTitle" text="Pieces jointes" styleClass="detail-section-title"/>
+                    <VBox fx:id="detailAttachmentsBox" spacing="4"/>
+                </VBox>
             </VBox>
-        </VBox>
-    </right>
+        </SplitPane>
+    </center>
     <bottom>
         <HBox spacing="10" alignment="CENTER_LEFT" styleClass="bottom-bar">
             <padding>

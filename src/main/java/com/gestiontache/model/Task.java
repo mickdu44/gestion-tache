@@ -2,6 +2,8 @@ package com.gestiontache.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -18,6 +20,8 @@ public class Task {
     private LocalDateTime createdAt;
     private int order;
     private Priority priority = Priority.MOYENNE;
+    private List<SubTask> subtasks = new ArrayList<>();
+    private List<String> attachments = new ArrayList<>();
 
     public Task() {
         // Required for JSON deserialization.
@@ -96,6 +100,23 @@ public class Task {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public List<SubTask> getSubtasks() {
+        return subtasks;
+    }
+
+    public void setSubtasks(List<SubTask> subtasks) {
+        this.subtasks = subtasks != null ? subtasks : new ArrayList<>();
+    }
+
+    /** Local file paths of the files attached to this task. */
+    public List<String> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<String> attachments) {
+        this.attachments = attachments != null ? attachments : new ArrayList<>();
     }
 
     /**
