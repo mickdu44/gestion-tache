@@ -1,5 +1,6 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import com.gestiontache.util.DescriptionFormatter;
 import javafx.collections.ObservableList;
@@ -39,6 +40,7 @@ public class TaskListCell extends ListCell<Task> {
     private final Label titleLabel = new Label();
     private final Label descriptionLabel = new Label();
     private final Label priorityBadge = new Label();
+    private final Label subtaskBadge = new Label();
     private final Label dateBadge = new Label();
     private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
@@ -66,21 +68,28 @@ public class TaskListCell extends ListCell<Task> {
         descriptionLabel.getStyleClass().add("task-description");
         descriptionLabel.setWrapText(true);
         priorityBadge.getStyleClass().add("priority-badge");
+        subtaskBadge.getStyleClass().add("subtask-count-badge");
         dateBadge.getStyleClass().add("task-date-badge");
         editButton.getStyleClass().add("icon-button");
         deleteButton.getStyleClass().add("icon-button");
 
+        titleLabel.setMinWidth(0);
+        descriptionLabel.setMinWidth(0);
+
         VBox textBox = new VBox(2, titleLabel, descriptionLabel);
         textBox.setMaxWidth(Double.MAX_VALUE);
+        textBox.setMinWidth(0);
         HBox.setHgrow(textBox, javafx.scene.layout.Priority.ALWAYS);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, dateBadge, editButton, deleteButton);
+        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, subtaskBadge, dateBadge, editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
+        root.setMaxWidth(Double.MAX_VALUE);
+        setMaxWidth(Double.MAX_VALUE);
 
         dragHandle.setVisible(reorderEnabled);
         dragHandle.setManaged(reorderEnabled);
@@ -170,6 +179,10 @@ public class TaskListCell extends ListCell<Task> {
     @Override
     protected void updateItem(Task task, boolean empty) {
         super.updateItem(task, empty);
+        // Prevents a long title/description from making the ListView's
+        // preferred width (and so a horizontal scrollbar) grow with the
+        // content; the row shrinks to whatever width the list actually has.
+        setPrefWidth(0);
         if (empty || task == null) {
             setGraphic(null);
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
@@ -198,6 +211,14 @@ public class TaskListCell extends ListCell<Task> {
         priorityBadge.setText(task.getPriority().toString());
         priorityBadge.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
         priorityBadge.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
+
+        boolean hasSubtasks = !task.getSubtasks().isEmpty();
+        if (hasSubtasks) {
+            long done = task.getSubtasks().stream().filter(SubTask::isCompleted).count();
+            subtaskBadge.setText(done + "/" + task.getSubtasks().size());
+        }
+        subtaskBadge.setVisible(hasSubtasks);
+        subtaskBadge.setManaged(hasSubtasks);
 
         if (showDateBadge && task.getDate() != null) {
             dateBadge.setText(task.getDate().format(DATE_BADGE_FORMAT));
