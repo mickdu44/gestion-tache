@@ -36,6 +36,12 @@ ne quitte la machine : tout est stocke en local.
   modification (ajout, edition, suppression, report) ne reecrit que
   le(s) fichier(s) du/des jour(s) concerne(s) ; un jour vide n'a pas
   de fichier. Aucune base de donnees ni serveur distant.
+- **Archivage automatique** : au demarrage, les taches terminees depuis
+  plus de 3 mois sont deplacees vers un repertoire d'archive separe
+  (`~/.gestion-tache/archive-days/`, meme principe qu'un fichier JSON
+  par jour) pour garder la liste active legere. Le bouton "Archives"
+  permet de consulter, restaurer ou supprimer definitivement les
+  taches archivees.
 
 ## Prerequis
 
@@ -115,10 +121,17 @@ manuelle de module-path n'est necessaire.
 
 ## Donnees
 
-Les taches sont lues/ecrites dans `~/.gestion-tache/days/`, un fichier
-JSON par jour nomme `AAAA-MM-JJ.json` (ex. `2026-03-10.json`) contenant
-la liste des taches de cette journee. Supprimer ce dossier reinitialise
-l'application (perte de toutes les taches).
+Les taches actives sont lues/ecrites dans `~/.gestion-tache/days/`, un
+fichier JSON par jour nomme `AAAA-MM-JJ.json` (ex. `2026-03-10.json`)
+contenant la liste des taches de cette journee. Supprimer ce dossier
+reinitialise l'application (perte de toutes les taches actives).
+
+Les taches terminees depuis plus de 3 mois sont deplacees
+automatiquement (a chaque demarrage) vers
+`~/.gestion-tache/archive-days/`, structure en fichiers JSON par jour
+selon le meme principe, consultable via le bouton "Archives" de
+l'application. Supprimer ce dossier reinitialise l'archive (perte des
+taches archivees correspondantes).
 
 Si une ancienne installation avait deja produit un fichier unique
 `~/.gestion-tache/tasks.json`, il est automatiquement reparti en

@@ -13,6 +13,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [ ] Annulation (undo) apres suppression d'une tache.
 - [ ] Theme sombre / clair configurable.
 - [ ] Tri et filtres supplementaires dans les resultats de recherche (par date, par statut).
+- [x] Archivage automatique des taches terminees depuis plus de 3 mois (repertoire `~/.gestion-tache/archive-days/` separe, un fichier JSON par jour comme pour les taches actives), avec un ecran "Archives" pour consulter, restaurer ou supprimer definitivement.
 - [ ] Supprimer le tag en cours et agrandir l'affichage latéral pour la description sur la moitié de l'écran
 - [ ] Afficher des boutons pour facilité la mise en page du texte enrichie et ajouter la possibilité de mettre un lien url et une pièce jointe
 - [ ] Sous-taches / checklist a l'interieur d'une tache.

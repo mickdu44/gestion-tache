@@ -28,6 +28,8 @@ public class TaskRepository {
             Paths.get(System.getProperty("user.home"), ".gestion-tache", "days");
     private static final Path LEGACY_SINGLE_FILE =
             Paths.get(System.getProperty("user.home"), ".gestion-tache", "tasks.json");
+    private static final Path DEFAULT_ARCHIVE_DIR =
+            Paths.get(System.getProperty("user.home"), ".gestion-tache", "archive-days");
 
     private final Path dataDir;
     private final ObjectMapper mapper;
@@ -35,6 +37,14 @@ public class TaskRepository {
     public TaskRepository() {
         this(DEFAULT_DATA_DIR);
         migrateLegacySingleFileIfNeeded();
+    }
+
+    /**
+     * Repository for the archive, stored the same way as the main data (one
+     * JSON file per original completion day) but under its own directory.
+     */
+    public static TaskRepository defaultArchive() {
+        return new TaskRepository(DEFAULT_ARCHIVE_DIR);
     }
 
     public TaskRepository(Path dataDir) {

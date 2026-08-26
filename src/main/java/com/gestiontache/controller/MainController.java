@@ -9,6 +9,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -74,7 +75,7 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        taskService = new TaskService(new TaskRepository());
+        taskService = new TaskService(new TaskRepository(), TaskRepository.defaultArchive());
         currentDate = LocalDate.now();
 
         priorityFilterCombo.getItems().add(ALL_PRIORITIES);
@@ -163,6 +164,45 @@ public class MainController {
         } else {
             showInfo(moved + " tache(s) reportee(s) au lendemain.");
         }
+    }
+
+    @FXML
+    private void onShowArchive() {
+        ListView<Task> archiveListView = new ListView<>();
+        archiveListView.getItems().setAll(taskService.getArchivedTasks());
+        archiveListView.setPrefHeight(360);
+        archiveListView.setPrefWidth(640);
+        archiveListView.setCellFactory(list -> new ArchiveListCell(
+                task -> {
+                    taskService.restoreFromArchive(task);
+                    archiveListView.getItems().remove(task);
+                    refresh();
+                },
+                task -> {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Supprimer definitivement");
+                    alert.setHeaderText("Supprimer definitivement \"" + task.getTitle() + "\" ?");
+                    alert.setContentText("Cette action est irreversible.");
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.isPresent() && result.get() == ButtonType.OK) {
+                        taskService.deleteFromArchive(task);
+                        archiveListView.getItems().remove(task);
+                    }
+                }));
+
+        Label info = new Label("Taches terminees archivees automatiquement apres 3 mois.");
+        info.getStyleClass().add("status-label");
+
+        VBox content = new VBox(10, info, archiveListView);
+        content.setPadding(new Insets(16));
+        content.setPrefWidth(660);
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Archives");
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+        dialog.showAndWait();
     }
 
     private void onToggleCompleted(Task task, boolean completed) {
