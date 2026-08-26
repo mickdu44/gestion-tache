@@ -131,6 +131,18 @@
     -fx-cursor: hand;
 }
 
+.view-toggle {
+    -fx-background-color: #f4f5f7;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 0;
+}
+
+.view-toggle:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
 .detail-pane {
     -fx-background-color: #ffffff;
     -fx-border-color: transparent transparent transparent #e5e7eb;

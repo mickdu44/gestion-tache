@@ -22,6 +22,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Hyperlink;
@@ -29,11 +30,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,7 +51,13 @@ public class MainController {
 
     private static final DateTimeFormatter DAY_FORMAT =
             DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.FRENCH);
+    private static final DateTimeFormatter WEEK_DAY_MONTH_FORMAT =
+            DateTimeFormatter.ofPattern("d MMMM", Locale.FRENCH);
+    private static final DateTimeFormatter WEEK_DAY_MONTH_YEAR_FORMAT =
+            DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH);
     private static final String ALL_PRIORITIES = "Toutes priorites";
+
+    private enum ViewMode { JOUR, SEMAINE }
 
     @FXML
     private ComboBox<String> priorityFilterCombo;
@@ -69,6 +79,14 @@ public class MainController {
     private Button todayButton;
     @FXML
     private Button reportButton;
+    @FXML
+    private DatePicker datePickerNav;
+    @FXML
+    private ToggleButton dayViewButton;
+    @FXML
+    private ToggleButton weekViewButton;
+    @FXML
+    private ToggleGroup viewModeGroup;
     @FXML
     private Label detailPlaceholder;
     @FXML
@@ -96,6 +114,7 @@ public class MainController {
 
     private TaskService taskService;
     private LocalDate currentDate;
+    private ViewMode viewMode = ViewMode.JOUR;
 
     @FXML
     private void initialize() {
@@ -108,6 +127,25 @@ public class MainController {
         }
         priorityFilterCombo.setValue(ALL_PRIORITIES);
         priorityFilterCombo.valueProperty().addListener((obs, oldValue, newValue) -> refresh());
+
+        datePickerNav.setValue(currentDate);
+        datePickerNav.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null && !newValue.equals(currentDate)) {
+                currentDate = newValue;
+                searchField.clear();
+                refresh();
+            }
+        });
+
+        viewModeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle == null) {
+                viewModeGroup.selectToggle(oldToggle);
+                return;
+            }
+            viewMode = newToggle == weekViewButton ? ViewMode.SEMAINE : ViewMode.JOUR;
+            searchField.clear();
+            refresh();
+        });
 
         taskListView.setCellFactory(list -> new TaskListCell(
                 this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
@@ -139,14 +177,14 @@ public class MainController {
 
     @FXML
     private void onPreviousDay() {
-        currentDate = currentDate.minusDays(1);
+        currentDate = currentDate.minusDays(viewMode == ViewMode.SEMAINE ? 7 : 1);
         searchField.clear();
         refresh();
     }
 
     @FXML
     private void onNextDay() {
-        currentDate = currentDate.plusDays(1);
+        currentDate = currentDate.plusDays(viewMode == ViewMode.SEMAINE ? 7 : 1);
         searchField.clear();
         refresh();
     }
@@ -263,7 +301,12 @@ public class MainController {
      * day's tasks, and a drag-and-drop move could not be persisted meaningfully).
      */
     private boolean isReorderEnabled() {
-        return !isSearching() && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
+        return !isSearching() && viewMode == ViewMode.JOUR && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
+    }
+
+    /** The date badge (which day a task belongs to) is only useful when a single day isn't the whole view. */
+    private boolean showDateBadge() {
+        return isSearching() || viewMode == ViewMode.SEMAINE;
     }
 
     /**
@@ -326,19 +369,34 @@ public class MainController {
 
     private void refresh() {
         boolean searching = isSearching();
+        boolean weekView = viewMode == ViewMode.SEMAINE;
         prevDayButton.setDisable(searching);
         nextDayButton.setDisable(searching);
         todayButton.setDisable(searching);
-        reportButton.setDisable(searching);
+        reportButton.setDisable(searching || weekView);
+        datePickerNav.setDisable(searching);
+        dayViewButton.setDisable(searching);
+        weekViewButton.setDisable(searching);
+        if (!searching) {
+            datePickerNav.setValue(currentDate);
+        }
 
         taskListView.setCellFactory(list -> new TaskListCell(
                 this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
-                searching, isReorderEnabled(), this::onTasksReordered));
+                showDateBadge(), isReorderEnabled(), this::onTasksReordered));
+
+        LocalDate weekStart = currentDate.with(DayOfWeek.MONDAY);
+        LocalDate weekEnd = weekStart.plusDays(6);
 
         List<Task> tasks;
         if (searching) {
             String keyword = searchField.getText();
             tasks = taskService.search(keyword);
+        } else if (weekView) {
+            tasks = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                tasks.addAll(taskService.getTasksForDate(weekStart.plusDays(i)));
+            }
         } else {
             tasks = taskService.getTasksForDate(currentDate);
         }
@@ -355,6 +413,16 @@ public class MainController {
             dateLabel.setText("Resultats de recherche");
             statusLabel.setText("\"" + keyword.trim() + "\" trouve dans le titre ou la description");
             countLabel.setText(tasks.size() + " tache(s) trouvee(s)");
+        } else if (weekView) {
+            String label = formatWeekLabel(weekStart, weekEnd);
+            LocalDate today = LocalDate.now();
+            if (!today.isBefore(weekStart) && !today.isAfter(weekEnd)) {
+                label += " (semaine en cours)";
+            }
+            dateLabel.setText(label);
+            statusLabel.setText("");
+            long done = tasks.stream().filter(Task::isCompleted).count();
+            countLabel.setText(done + " / " + tasks.size() + " tache(s) terminee(s)");
         } else {
             String label = capitalize(currentDate.format(DAY_FORMAT));
             if (currentDate.isEqual(LocalDate.now())) {
@@ -492,5 +560,13 @@ public class MainController {
             return text;
         }
         return Character.toUpperCase(text.charAt(0)) + text.substring(1);
+    }
+
+    /** "Semaine du 24 au 30 aout 2026", or "Semaine du 29 aout au 4 septembre 2026" across a month boundary. */
+    private static String formatWeekLabel(LocalDate weekStart, LocalDate weekEnd) {
+        String start = weekStart.getMonth() == weekEnd.getMonth()
+                ? String.valueOf(weekStart.getDayOfMonth())
+                : weekStart.format(WEEK_DAY_MONTH_FORMAT);
+        return "Semaine du " + start + " au " + weekEnd.format(WEEK_DAY_MONTH_YEAR_FORMAT);
     }
 }
