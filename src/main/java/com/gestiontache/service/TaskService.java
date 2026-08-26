@@ -7,12 +7,16 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * In-memory task list backed by {@link TaskRepository}. Every mutation is
- * persisted immediately so the local JSON file always reflects the current state.
+ * In-memory task list backed by {@link TaskRepository}, which stores one
+ * JSON file per day. Every mutation is persisted immediately, rewriting only
+ * the day file(s) actually affected (never the whole dataset), so the local
+ * files always reflect the current state.
  */
 public class TaskService {
 
@@ -36,8 +40,8 @@ public class TaskService {
     public TaskService(TaskRepository repository, TaskRepository archiveRepository) {
         this.repository = repository;
         this.archiveRepository = archiveRepository;
-        this.tasks = repository.load();
-        this.archivedTasks = archiveRepository != null ? archiveRepository.load() : new ArrayList<>();
+        this.tasks = repository.loadAll();
+        this.archivedTasks = archiveRepository != null ? archiveRepository.loadAll() : new ArrayList<>();
         archiveOldCompletedTasks(LocalDate.now());
     }
 
@@ -48,7 +52,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    /** Searches every task, regardless of its date, by title or description. */
+    /** Searches every task, across every day file, by title or description. */
     public List<Task> search(String keyword) {
         return tasks.stream()
                 .filter(t -> t.matches(keyword))
@@ -65,7 +69,7 @@ public class TaskService {
     public void addTask(Task task) {
         task.setOrder(nextOrderForDate(task.getDate()));
         tasks.add(task);
-        persist();
+        persistDate(task.getDate());
     }
 
     /**
@@ -80,22 +84,31 @@ public class TaskService {
                 t.setOrder(order++);
             }
         }
-        persist();
+        persistDate(date);
     }
 
-    /** The task object is mutated in place by the caller; this simply persists it. */
-    public void updateTask(Task task) {
-        persist();
+    /**
+     * The task object is mutated in place by the caller (including its date,
+     * for an edit that moves it to another day); this persists whichever day
+     * file(s) are actually affected.
+     */
+    public void updateTask(Task task, LocalDate previousDate) {
+        if (previousDate.equals(task.getDate())) {
+            persistDate(task.getDate());
+        } else {
+            persistDates(Set.of(previousDate, task.getDate()));
+        }
     }
 
     public void deleteTask(Task task) {
+        LocalDate date = task.getDate();
         tasks.remove(task);
-        persist();
+        persistDate(date);
     }
 
     public void setCompleted(Task task, boolean completed) {
         task.setCompleted(completed);
-        persist();
+        persistDate(task.getDate());
     }
 
     /**
@@ -113,24 +126,30 @@ public class TaskService {
             t.setOrder(order++);
         }
         if (!unfinished.isEmpty()) {
-            persist();
+            persistDates(Set.of(date, next));
         }
         return unfinished.size();
     }
 
     /**
-     * Reports every unfinished task from a previous day to {@code today}.
+     * Reports every unfinished task from any previous day to {@code today}.
      * @return the number of tasks moved.
      */
     public int reportOverdueToToday(LocalDate today) {
         List<Task> overdue = getOverdueUnfinishedTasks(today);
+        Set<LocalDate> affectedDates = new HashSet<>();
+        for (Task t : overdue) {
+            affectedDates.add(t.getDate());
+        }
+        affectedDates.add(today);
+
         int order = nextOrderForDate(today);
         for (Task t : overdue) {
             t.setDate(today);
             t.setOrder(order++);
         }
         if (!overdue.isEmpty()) {
-            persist();
+            persistDates(affectedDates);
         }
         return overdue.size();
     }
@@ -147,16 +166,17 @@ public class TaskService {
         if (!archivedTasks.remove(task)) {
             return;
         }
-        task.setOrder(nextOrderForDate(task.getDate()));
+        LocalDate date = task.getDate();
+        task.setOrder(nextOrderForDate(date));
         tasks.add(task);
-        persist();
-        persistArchive();
+        persistDate(date);
+        persistArchiveDate(date);
     }
 
     /** Permanently removes a task from the archive (not recoverable). */
     public void deleteFromArchive(Task task) {
         if (archivedTasks.remove(task)) {
-            persistArchive();
+            persistArchiveDate(task.getDate());
         }
     }
 
@@ -176,15 +196,27 @@ public class TaskService {
         if (toArchive.isEmpty()) {
             return;
         }
+        Set<LocalDate> affectedDates = toArchive.stream().map(Task::getDate).collect(Collectors.toSet());
         tasks.removeAll(toArchive);
         archivedTasks.addAll(toArchive);
-        persist();
-        persistArchive();
+        persistDates(affectedDates);
+        persistArchiveDates(affectedDates);
     }
 
-    private void persistArchive() {
-        if (archiveRepository != null) {
-            archiveRepository.save(archivedTasks);
+    /** Rewrites the archive's day file for {@code date} from the current in-memory state. */
+    private void persistArchiveDate(LocalDate date) {
+        if (archiveRepository == null) {
+            return;
+        }
+        List<Task> forDate = archivedTasks.stream()
+                .filter(t -> date.equals(t.getDate()))
+                .collect(Collectors.toList());
+        archiveRepository.saveDay(date, forDate);
+    }
+
+    private void persistArchiveDates(Set<LocalDate> dates) {
+        for (LocalDate date : dates) {
+            persistArchiveDate(date);
         }
     }
 
@@ -196,7 +228,17 @@ public class TaskService {
                 .orElse(-1) + 1;
     }
 
-    private void persist() {
-        repository.save(tasks);
+    /** Rewrites the day file for {@code date} from the current in-memory state. */
+    private void persistDate(LocalDate date) {
+        List<Task> forDate = tasks.stream()
+                .filter(t -> date.equals(t.getDate()))
+                .collect(Collectors.toList());
+        repository.saveDay(date, forDate);
+    }
+
+    private void persistDates(Set<LocalDate> dates) {
+        for (LocalDate date : dates) {
+            persistDate(date);
+        }
     }
 }

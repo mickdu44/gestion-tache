@@ -25,21 +25,21 @@ class TaskArchivingTest {
     Path tempDir;
 
     private TaskService newServiceWithArchive() {
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         return new TaskService(repository, archive);
     }
 
     @Test
     void completedTaskOlderThanThreeMonthsIsArchivedOnStartup() {
         LocalDate today = LocalDate.now();
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         TaskService seedingService = new TaskService(repository);
         Task old = new Task("Vieille tache terminee", "", today.minusMonths(4));
         old.setCompleted(true);
         seedingService.addTask(old);
 
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         TaskService service = new TaskService(repository, archive);
 
         assertTrue(service.getTasksForDate(today.minusMonths(4)).isEmpty());
@@ -56,8 +56,8 @@ class TaskArchivingTest {
         service.addTask(recent);
 
         // Re-create the service to re-run the startup sweep, as would happen on the next launch.
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         TaskService reloaded = new TaskService(repository, archive);
 
         assertTrue(reloaded.getArchivedTasks().isEmpty());
@@ -71,8 +71,8 @@ class TaskArchivingTest {
         Task oldButUnfinished = new Task("Vieille tache non terminee", "", today.minusMonths(5));
         service.addTask(oldButUnfinished);
 
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         TaskService reloaded = new TaskService(repository, archive);
 
         assertTrue(reloaded.getArchivedTasks().isEmpty());
@@ -81,14 +81,14 @@ class TaskArchivingTest {
 
     @Test
     void archivingIsDisabledWithoutAnArchiveRepository() {
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         TaskService service = new TaskService(repository);
         LocalDate today = LocalDate.now();
         Task old = new Task("Tres vieille tache", "", today.minusYears(1));
         old.setCompleted(true);
         service.addTask(old);
 
-        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("tasks.json")));
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("days")));
 
         assertTrue(reloaded.getArchivedTasks().isEmpty());
         assertEquals(1, reloaded.getTasksForDate(today.minusYears(1)).size());
@@ -97,14 +97,14 @@ class TaskArchivingTest {
     @Test
     void restoringAnArchivedTaskMovesItBackToTheActiveList() {
         LocalDate today = LocalDate.now();
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         TaskService seedingService = new TaskService(repository);
         Task old = new Task("A restaurer", "", today.minusMonths(4));
         old.setCompleted(true);
         old.setPriority(Priority.HAUTE);
         seedingService.addTask(old);
 
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         TaskService service = new TaskService(repository, archive);
         Task archived = service.getArchivedTasks().get(0);
 
@@ -120,13 +120,13 @@ class TaskArchivingTest {
     @Test
     void deletingFromArchiveIsPermanentAndDoesNotAffectTheActiveList() {
         LocalDate today = LocalDate.now();
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         TaskService seedingService = new TaskService(repository);
         Task old = new Task("A supprimer", "", today.minusMonths(6));
         old.setCompleted(true);
         seedingService.addTask(old);
 
-        TaskRepository archive = new TaskRepository(tempDir.resolve("tasks-archive.json"));
+        TaskRepository archive = new TaskRepository(tempDir.resolve("archive-days"));
         TaskService service = new TaskService(repository, archive);
         Task archived = service.getArchivedTasks().get(0);
 
