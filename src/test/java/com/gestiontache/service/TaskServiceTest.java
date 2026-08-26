@@ -26,7 +26,7 @@ class TaskServiceTest {
 
     @BeforeEach
     void setUp() {
-        TaskRepository repository = new TaskRepository(tempDir.resolve("tasks.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         service = new TaskService(repository);
         today = LocalDate.now();
     }
@@ -110,7 +110,7 @@ class TaskServiceTest {
         service.addTask(task);
         service.addTask(urgent);
 
-        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("tasks.json")));
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("days")));
         List<Task> tasksForToday = reloaded.getTasksForDate(today);
         assertEquals(Priority.MOYENNE,
                 tasksForToday.stream().filter(t -> t.getId().equals(task.getId())).findFirst().orElseThrow().getPriority());
@@ -164,12 +164,43 @@ class TaskServiceTest {
 
     @Test
     void persistsAcrossServiceInstances() {
-        TaskRepository repository = new TaskRepository(tempDir.resolve("persisted.json"));
+        TaskRepository repository = new TaskRepository(tempDir.resolve("persisted-days"));
         TaskService first = new TaskService(repository);
         first.addTask(new Task("Sauvegarder les donnees", "verification locale", today));
 
-        TaskService second = new TaskService(new TaskRepository(tempDir.resolve("persisted.json")));
+        TaskService second = new TaskService(new TaskRepository(tempDir.resolve("persisted-days")));
 
         assertEquals(1, second.getTasksForDate(today).size());
+    }
+
+    @Test
+    void editingATaskToAnotherDateMovesItBetweenDayFiles() {
+        Task task = new Task("Reunion", "", today);
+        service.addTask(task);
+
+        LocalDate previousDate = task.getDate();
+        task.setDate(today.plusDays(2));
+        service.updateTask(task, previousDate);
+
+        assertTrue(service.getTasksForDate(today).isEmpty());
+        assertEquals(1, service.getTasksForDate(today.plusDays(2)).size());
+
+        // Reloading from disk proves the old day file no longer holds the task
+        // and the new day file does: this is a cross-file move, not just an
+        // in-memory change.
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("days")));
+        assertTrue(reloaded.getTasksForDate(today).isEmpty());
+        assertEquals(1, reloaded.getTasksForDate(today.plusDays(2)).size());
+    }
+
+    @Test
+    void searchStillSpansEveryDayFileAfterReload() {
+        service.addTask(new Task("Facturation Dupont", "", today));
+        service.addTask(new Task("Reunion", "parler du client Dupont", today.minusDays(10)));
+        service.addTask(new Task("Achat fournitures", "", today.plusDays(5)));
+
+        TaskService reloaded = new TaskService(new TaskRepository(tempDir.resolve("days")));
+
+        assertEquals(2, reloaded.search("dupont").size());
     }
 }
