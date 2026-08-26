@@ -20,6 +20,9 @@ ne quitte la machine : tout est stocke en local.
   liste a puces — rendue dans le panneau de detail.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Export / import CSV** : boutons "Exporter (CSV)" et "Importer (CSV)"
+  pour sauvegarder l'ensemble des taches (titre, description, date,
+  priorite, statut) dans un fichier, ou en recharger depuis un fichier.
 - **Report des taches non terminees** :
   - bouton "Reporter les taches non terminees a demain" pour reporter
     au lendemain les taches non terminees du jour affiche ;

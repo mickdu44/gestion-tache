@@ -8,7 +8,7 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [x] Texte enrichi dans la description des taches (gras, italique, listes a puces).
 - [ ] Taches recurrentes (quotidienne, hebdomadaire, jours ouvres...).
 - [ ] Vue "semaine" ou "liste de toutes les taches en retard" en plus de la vue par jour.
-- [ ] Export / import des taches (CSV, iCal) pour sauvegarde ou partage.
+- [x] Export / import CSV des taches (titre, description, date, priorite, statut) pour sauvegarde ou partage. Reste a discuter : format iCal.
 - [ ] Statistiques simples (taches terminees par jour/semaine, taux de completion).
 - [ ] Annulation (undo) apres suppression d'une tache.
 - [ ] Theme sombre / clair configurable.

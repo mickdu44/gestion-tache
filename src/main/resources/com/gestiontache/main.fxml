@@ -67,6 +67,8 @@
             </padding>
             <Button fx:id="addTaskButton" text="+ Ajouter une tache" onAction="#onAddTask" styleClass="primary-button"/>
             <Button fx:id="reportButton" text="Reporter les taches non terminees a demain" onAction="#onReportUnfinished"/>
+            <Button fx:id="exportButton" text="Exporter (CSV)" onAction="#onExport"/>
+            <Button fx:id="importButton" text="Importer (CSV)" onAction="#onImport"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="countLabel" styleClass="count-label"/>
         </HBox>

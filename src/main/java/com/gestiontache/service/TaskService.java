@@ -26,6 +26,13 @@ public class TaskService {
         this.tasks = repository.loadAll();
     }
 
+    /** Every task, sorted by date then manual order, typically used for exports. */
+    public List<Task> getAllTasks() {
+        return tasks.stream()
+                .sorted(Comparator.comparing(Task::getDate).thenComparingInt(Task::getOrder))
+                .collect(Collectors.toList());
+    }
+
     public List<Task> getTasksForDate(LocalDate date) {
         return tasks.stream()
                 .filter(t -> date.equals(t.getDate()))
