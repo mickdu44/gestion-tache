@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DescriptionFormatterTest {
@@ -39,5 +40,27 @@ class DescriptionFormatterTest {
         assertEquals("", DescriptionFormatter.toPlainText(null));
         assertEquals("", DescriptionFormatter.toPlainText(""));
         assertTrue(DescriptionFormatter.parse(null).isEmpty());
+    }
+
+    @Test
+    void parsesLinkSegmentWithLabelAndUrl() {
+        List<DescriptionFormatter.Segment> segments =
+                DescriptionFormatter.parse("Voir [le site](https://example.com) pour plus d'infos.");
+
+        DescriptionFormatter.Segment link = segments.stream()
+                .filter(s -> s.url() != null)
+                .findFirst()
+                .orElseThrow();
+        assertEquals("le site", link.text());
+        assertEquals("https://example.com", link.url());
+        assertFalse(link.bold());
+        assertFalse(link.italic());
+    }
+
+    @Test
+    void toPlainTextKeepsTheLinkLabelOnly() {
+        String plain = DescriptionFormatter.toPlainText("Un [lien](https://example.com) ici.");
+
+        assertEquals("Un lien ici.", plain);
     }
 }

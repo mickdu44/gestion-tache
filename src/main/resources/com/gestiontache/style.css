@@ -64,6 +64,14 @@
     -fx-text-fill: #6b7280;
 }
 
+.subtask-count-badge {
+    -fx-background-color: #ede9fe;
+    -fx-background-radius: 10;
+    -fx-padding: 3 8 3 8;
+    -fx-font-size: 11px;
+    -fx-text-fill: #5b21b6;
+}
+
 .task-date-badge {
     -fx-background-color: #e5e7eb;
     -fx-background-radius: 10;
@@ -145,23 +153,6 @@
     -fx-text-fill: #6b7280;
 }
 
-.detail-status {
-    -fx-background-radius: 10;
-    -fx-padding: 3 8 3 8;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-}
-
-.detail-status.status-pending {
-    -fx-background-color: #fef3c7;
-    -fx-text-fill: #92400e;
-}
-
-.detail-status.status-done {
-    -fx-background-color: #d1fae5;
-    -fx-text-fill: #065f46;
-}
-
 .detail-section-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -193,4 +184,52 @@
 
 .detail-description-scroll > .viewport {
     -fx-background-color: transparent;
+}
+
+.stats-summary {
+    -fx-font-size: 14px;
+    -fx-text-fill: #1f2937;
+}
+
+.md-link {
+    -fx-font-size: 13px;
+    -fx-text-fill: #2563eb;
+}
+
+.subtask-row {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
+}
+
+.attachment-link {
+    -fx-font-size: 13px;
+    -fx-text-fill: #2563eb;
+}
+
+.dialog-scroll,
+.dialog-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.format-toolbar {
+    -fx-padding: 0 0 2 0;
+}
+
+.format-button {
+    -fx-min-width: 36;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 12px;
+}
+
+.subtask-edit-row,
+.attachment-edit-row {
+    -fx-background-color: #f4f5f7;
+    -fx-background-radius: 6;
+    -fx-padding: 4 8 4 8;
+}
+
+.subtask-edit-label,
+.attachment-chip-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #374151;
 }

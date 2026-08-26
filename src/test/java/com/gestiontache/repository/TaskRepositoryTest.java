@@ -1,5 +1,6 @@
 package com.gestiontache.repository;
 
+import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -72,5 +73,38 @@ class TaskRepositoryTest {
         List<Task> all = repository.loadAll();
         assertEquals(2, all.size());
         assertTrue(all.stream().anyMatch(t -> t.getTitle().equals("Tache jour 2")));
+    }
+
+    @Test
+    void subtasksAndAttachmentsSurviveARoundTrip() {
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        LocalDate day = LocalDate.of(2026, 3, 10);
+        Task task = new Task("Preparer le dossier", "", day);
+        SubTask done = new SubTask("Recolter les pieces");
+        done.setCompleted(true);
+        task.setSubtasks(List.of(done, new SubTask("Envoyer au client")));
+        task.setAttachments(List.of("/home/user/documents/dossier.pdf"));
+
+        repository.saveDay(day, List.of(task));
+
+        Task reloaded = repository.loadAll().get(0);
+        assertEquals(2, reloaded.getSubtasks().size());
+        assertTrue(reloaded.getSubtasks().stream()
+                .anyMatch(s -> s.getTitle().equals("Recolter les pieces") && s.isCompleted()));
+        assertTrue(reloaded.getSubtasks().stream()
+                .anyMatch(s -> s.getTitle().equals("Envoyer au client") && !s.isCompleted()));
+        assertEquals(List.of("/home/user/documents/dossier.pdf"), reloaded.getAttachments());
+    }
+
+    @Test
+    void taskWithoutSubtasksOrAttachmentsLoadsWithEmptyLists() {
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        LocalDate day = LocalDate.of(2026, 3, 10);
+        repository.saveDay(day, List.of(new Task("Tache simple", "", day)));
+
+        Task reloaded = repository.loadAll().get(0);
+
+        assertTrue(reloaded.getSubtasks().isEmpty());
+        assertTrue(reloaded.getAttachments().isEmpty());
     }
 }

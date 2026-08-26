@@ -1,40 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonType?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
 <DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.gestiontache.controller.TaskDialogController"
-            stylesheets="@style.css">
+            stylesheets="@style.css" prefWidth="560">
     <content>
-        <GridPane hgap="10" vgap="10">
-            <padding>
-                <Insets top="16" right="16" bottom="8" left="16"/>
-            </padding>
-            <columnConstraints>
-                <ColumnConstraints minWidth="90"/>
-                <ColumnConstraints hgrow="ALWAYS" minWidth="300"/>
-            </columnConstraints>
-            <Label text="Titre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <Label text="Description" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
-            <TextArea fx:id="descriptionArea" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                      prefRowCount="5" wrapText="true"/>
-            <Label text="Priorite" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="priorityComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-            <Label text="Recurrence" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="recurrenceComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-            <Label text="Date" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="datePicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-        </GridPane>
+        <ScrollPane fitToWidth="true" prefHeight="520" styleClass="dialog-scroll">
+            <VBox spacing="14">
+                <padding>
+                    <Insets top="16" right="16" bottom="8" left="16"/>
+                </padding>
+                <GridPane hgap="10" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="90"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="300"/>
+                    </columnConstraints>
+                    <Label text="Titre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="Description" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                    <VBox spacing="4" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                        <HBox spacing="4" styleClass="format-toolbar">
+                            <Button fx:id="boldButton" text="G" onAction="#onFormatBold" styleClass="format-button"/>
+                            <Button fx:id="italicButton" text="I" onAction="#onFormatItalic" styleClass="format-button"/>
+                            <Button fx:id="bulletButton" text="Liste" onAction="#onFormatBullet" styleClass="format-button"/>
+                            <Button fx:id="linkButton" text="Lien" onAction="#onFormatLink" styleClass="format-button"/>
+                        </HBox>
+                        <TextArea fx:id="descriptionArea" prefRowCount="5" wrapText="true"/>
+                    </VBox>
+                    <Label text="Priorite" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="priorityComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="Recurrence" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="recurrenceComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                    <Label text="Date" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                    <DatePicker fx:id="datePicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                </GridPane>
+
+                <Separator/>
+                <Label text="Sous-taches" styleClass="detail-section-title"/>
+                <VBox fx:id="subtasksBox" spacing="4"/>
+                <HBox spacing="6" alignment="CENTER_LEFT">
+                    <TextField fx:id="newSubtaskField" promptText="Nouvelle sous-tache..." HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addSubtaskButton" text="Ajouter" onAction="#onAddSubtask"/>
+                </HBox>
+
+                <Separator/>
+                <Label text="Pieces jointes" styleClass="detail-section-title"/>
+                <VBox fx:id="attachmentsBox" spacing="4"/>
+                <HBox alignment="CENTER_LEFT">
+                    <Button fx:id="addAttachmentButton" text="Ajouter une piece jointe" onAction="#onAddAttachment"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
     </content>
     <buttonTypes>
         <ButtonType fx:constant="OK"/>
