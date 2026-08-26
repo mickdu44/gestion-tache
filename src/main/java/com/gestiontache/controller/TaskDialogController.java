@@ -7,6 +7,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 
 import java.time.LocalDate;
 
@@ -31,6 +32,12 @@ public class TaskDialogController {
     private void initialize() {
         priorityComboBox.getItems().setAll(Priority.values());
         recurrenceComboBox.getItems().setAll(Recurrence.values());
+
+        Tooltip markdownHint = new Tooltip(
+                "Mise en forme prise en charge : **gras**, *italique*, lignes commencant par \"- \" pour une liste.");
+        markdownHint.setShowDelay(javafx.util.Duration.millis(200));
+        descriptionArea.setTooltip(markdownHint);
+        descriptionArea.setPromptText("Astuce : **gras**, *italique*, \"- \" pour une liste a puces.");
     }
 
     public void fill(String title, String description, Priority priority, Recurrence recurrence, LocalDate date) {

@@ -168,9 +168,23 @@
     -fx-text-fill: #9ca3af;
 }
 
-.detail-description {
+.md-text {
     -fx-font-size: 13px;
-    -fx-text-fill: #374151;
+    -fx-fill: #374151;
+}
+
+.md-bold {
+    -fx-font-weight: bold;
+}
+
+.md-italic {
+    -fx-font-style: italic;
+}
+
+.detail-description-empty {
+    -fx-font-size: 13px;
+    -fx-font-style: italic;
+    -fx-fill: #9ca3af;
 }
 
 .detail-description-scroll {

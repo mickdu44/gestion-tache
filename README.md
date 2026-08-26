@@ -15,6 +15,9 @@ ne quitte la machine : tout est stocke en local.
   filtrable via le menu deroulant de la barre du haut.
 - **Detail de tache** : cliquer sur une tache affiche son detail complet
   (titre, date, statut, priorite, description) dans un panneau a droite.
+- **Texte enrichi** : la description accepte une mise en forme simple —
+  `**gras**`, `*italique*` et des lignes commencant par `- ` pour une
+  liste a puces — rendue dans le panneau de detail.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Taches recurrentes** : une tache peut etre configuree en Quotidienne,
@@ -27,12 +30,15 @@ ne quitte la machine : tout est stocke en local.
     existent, l'application propose de les reporter automatiquement a
     aujourd'hui.
 - **Recherche** : la barre de recherche filtre l'ensemble des taches
-  (tous les jours confondus) dont le **titre** ou la **description**
-  contient les mots-cles saisis (insensible a la casse).
-- **Stockage local** : les taches sont enregistrees dans un fichier
-  JSON local (`~/.gestion-tache/tasks.json`), sans base de donnees ni
-  serveur distant. Chaque modification (ajout, edition, suppression,
-  report) est persistee immediatement.
+  (tous les jours confondus, tous fichiers confondus) dont le **titre**
+  ou la **description** contient les mots-cles saisis (insensible a la
+  casse).
+- **Stockage local, un fichier JSON par jour** : les taches sont
+  enregistrees dans `~/.gestion-tache/days/AAAA-MM-JJ.json`, un
+  fichier par journee contenant l'ensemble de ses taches. Une
+  modification (ajout, edition, suppression, report) ne reecrit que
+  le(s) fichier(s) du/des jour(s) concerne(s) ; un jour vide n'a pas
+  de fichier. Aucune base de donnees ni serveur distant.
 
 ## Prerequis
 
@@ -112,9 +118,16 @@ manuelle de module-path n'est necessaire.
 
 ## Donnees
 
-Les taches sont lues/ecrites dans `~/.gestion-tache/tasks.json` au
-format JSON. Supprimer ce fichier reinitialise l'application (perte de
-toutes les taches).
+Les taches sont lues/ecrites dans `~/.gestion-tache/days/`, un fichier
+JSON par jour nomme `AAAA-MM-JJ.json` (ex. `2026-03-10.json`) contenant
+la liste des taches de cette journee. Supprimer ce dossier reinitialise
+l'application (perte de toutes les taches).
+
+Si une ancienne installation avait deja produit un fichier unique
+`~/.gestion-tache/tasks.json`, il est automatiquement reparti en
+fichiers journaliers au premier lancement suivant la mise a jour ;
+l'ancien fichier est conserve tel quel (non supprime) a titre de
+sauvegarde.
 
 ## Structure du projet
 
@@ -123,7 +136,7 @@ src/main/java/com/gestiontache/
   MainApp.java                     Point d'entree JavaFX
   Launcher.java                    Point d'entree pour le jar shade (java -jar)
   model/Task.java                  Modele d'une tache
-  repository/TaskRepository.java   Persistance JSON locale
+  repository/TaskRepository.java   Persistance JSON locale (un fichier par jour)
   service/TaskService.java         Logique metier (recherche, report, CRUD)
   controller/                      Controleurs JavaFX (FXML)
 src/main/resources/com/gestiontache/

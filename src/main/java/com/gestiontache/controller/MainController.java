@@ -5,6 +5,9 @@ import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
+import com.gestiontache.util.DescriptionFormatter;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -67,7 +70,7 @@ public class MainController {
     @FXML
     private Label detailRecurrenceLabel;
     @FXML
-    private Label detailDescriptionLabel;
+    private TextFlow detailDescriptionFlow;
 
     private TaskService taskService;
     private LocalDate currentDate;
@@ -171,8 +174,9 @@ public class MainController {
     }
 
     private void onEditTask(Task task) {
+        LocalDate previousDate = task.getDate();
         openTaskDialog(task, task.getDate()).ifPresent(updated -> {
-            taskService.updateTask(updated);
+            taskService.updateTask(updated, previousDate);
             refresh();
         });
     }
@@ -342,8 +346,13 @@ public class MainController {
         detailRecurrenceLabel.setVisible(recurring);
         detailRecurrenceLabel.setManaged(recurring);
         String description = task.getDescription();
-        detailDescriptionLabel.setText(
-                description == null || description.isBlank() ? "(Aucune description)" : description);
+        if (description == null || description.isBlank()) {
+            Text empty = new Text("(Aucune description)");
+            empty.getStyleClass().add("detail-description-empty");
+            detailDescriptionFlow.getChildren().setAll(empty);
+        } else {
+            detailDescriptionFlow.getChildren().setAll(DescriptionFormatter.toNodes(description));
+        }
     }
 
     private void showInfo(String message) {
