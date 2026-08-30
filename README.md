@@ -4,6 +4,10 @@ Client lourd JavaFX pour gerer des taches quotidiennes de travail, avec
 report des taches non terminees et recherche plein texte. Aucune donnee
 ne quitte la machine : tout est stocke en local.
 
+Un second client, en .NET 8 / WinUI 3 (Windows), couvrant le coeur des
+fonctionnalites, est disponible dans [`dotnet-winui3/`](dotnet-winui3/README.md).
+Les deux clients partagent le meme dossier de donnees local.
+
 ## Fonctionnalites
 
 - **Vue par jour** : navigation entre les jours (precedent / suivant /

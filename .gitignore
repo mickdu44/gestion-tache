@@ -5,3 +5,9 @@ dependency-reduced-pom.xml
 *.iml
 .vscode/
 .DS_Store
+
+# .NET / WinUI3
+bin/
+obj/
+*.user
+.vs/

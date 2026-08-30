@@ -1,0 +1,107 @@
+<Window
+    x:Class="GestionTaches.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GestionTaches"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Padding="16" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: day navigation -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Button x:Name="PrevDayButton" Content="◀" Click="OnPreviousDay" />
+            <TextBlock x:Name="DateLabel" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" />
+            <Button x:Name="NextDayButton" Content="▶" Click="OnNextDay" />
+            <Button x:Name="TodayButton" Content="Aujourd'hui" Click="OnToday" />
+            <CalendarDatePicker x:Name="DatePickerNav" DateChanged="OnDatePicked" />
+        </StackPanel>
+
+        <!-- Row 1: filter + search -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <ComboBox x:Name="PriorityFilterCombo" SelectionChanged="OnPriorityFilterChanged" MinWidth="150" />
+            <TextBox x:Name="SearchField" PlaceholderText="Rechercher une tache (titre ou description)..."
+                     Width="320" TextChanged="OnSearchTextChanged" />
+            <Button x:Name="ClearSearchButton" Content="✕" Click="OnClearSearch" />
+            <TextBlock x:Name="StatusLabel" VerticalAlignment="Center" Foreground="Gray" FontSize="12" />
+        </StackPanel>
+
+        <!-- Row 2: task list -->
+        <ListView Grid.Row="2" x:Name="TaskListView" SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:TaskRow">
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8" Padding="12,8" Margin="0,4">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Column="0" IsChecked="{x:Bind Task.Completed, Mode=OneWay}"
+                                      Tag="{x:Bind}" Checked="OnTaskChecked" Unchecked="OnTaskChecked"
+                                      VerticalAlignment="Center" />
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind Task.Title, Mode=OneWay}" FontWeight="SemiBold"
+                                           Opacity="{x:Bind CompletedOpacity, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind DescriptionPreview, Mode=OneWay}"
+                                           Foreground="Gray" FontSize="12" TextTrimming="CharacterEllipsis"
+                                           Visibility="{x:Bind DescriptionVisibility, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <Border Grid.Column="2" Background="{x:Bind PriorityBackground, Mode=OneWay}"
+                                    CornerRadius="10" Padding="8,3" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind PriorityLabel, Mode=OneWay}"
+                                           Foreground="{x:Bind PriorityForeground, Mode=OneWay}"
+                                           FontSize="11" FontWeight="Bold" />
+                            </Border>
+
+                            <Border Grid.Column="3" Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="10" Padding="8,3" VerticalAlignment="Center"
+                                    Visibility="{x:Bind DateBadgeVisibility, Mode=OneWay}">
+                                <TextBlock Text="{x:Bind DateBadgeText, Mode=OneWay}" FontSize="11" />
+                            </Border>
+
+                            <Button Grid.Column="4" Content="Modifier" Tag="{x:Bind}" Click="OnEditTask"
+                                    VerticalAlignment="Center" />
+                            <Button Grid.Column="5" Content="Supprimer" Tag="{x:Bind}" Click="OnDeleteTask"
+                                    VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Row 3: bottom bar -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button x:Name="AddTaskButton" Content="+ Ajouter une tache" Click="OnAddTask"
+                        Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="ReportButton" Content="Reporter les taches non terminees a demain"
+                        Click="OnReportUnfinished" />
+            </StackPanel>
+            <TextBlock Grid.Column="1" x:Name="CountLabel" VerticalAlignment="Center" Foreground="Gray"
+                       FontSize="12" HorizontalAlignment="Right" />
+        </Grid>
+    </Grid>
+</Window>
