@@ -3,6 +3,7 @@ package com.gestiontache.controller;
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.SubTask;
+import com.gestiontache.model.TaskStatus;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -41,6 +42,9 @@ public class TaskDialogController {
     private ComboBox<Recurrence> recurrenceComboBox;
 
     @FXML
+    private ComboBox<TaskStatus> statusComboBox;
+
+    @FXML
     private DatePicker datePicker;
 
     @FXML
@@ -59,6 +63,7 @@ public class TaskDialogController {
     private void initialize() {
         priorityComboBox.getItems().setAll(Priority.values());
         recurrenceComboBox.getItems().setAll(Recurrence.values());
+        statusComboBox.getItems().setAll(TaskStatus.values());
 
         Tooltip markdownHint = new Tooltip(
                 "Mise en forme prise en charge : **gras**, *italique*, \"- \" pour une liste, [texte](url) pour un lien.");
@@ -67,12 +72,13 @@ public class TaskDialogController {
         descriptionArea.setPromptText("Astuce : **gras**, *italique*, \"- \" pour une liste, [texte](url) pour un lien.");
     }
 
-    public void fill(String title, String description, Priority priority, Recurrence recurrence, LocalDate date,
-                      List<SubTask> existingSubtasks, List<String> existingAttachments) {
+    public void fill(String title, String description, Priority priority, Recurrence recurrence, TaskStatus status,
+                      LocalDate date, List<SubTask> existingSubtasks, List<String> existingAttachments) {
         titleField.setText(title == null ? "" : title);
         descriptionArea.setText(description == null ? "" : description);
         priorityComboBox.setValue(priority == null ? Priority.MOYENNE : priority);
         recurrenceComboBox.setValue(recurrence == null ? Recurrence.AUCUNE : recurrence);
+        statusComboBox.setValue(status == null ? TaskStatus.A_FAIRE : status);
         datePicker.setValue(date);
 
         subtasks.clear();
@@ -112,6 +118,10 @@ public class TaskDialogController {
 
     public Recurrence getRecurrence() {
         return recurrenceComboBox.getValue();
+    }
+
+    public TaskStatus getStatus() {
+        return statusComboBox.getValue();
     }
 
     public LocalDate getDate() {

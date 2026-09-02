@@ -273,4 +273,37 @@ class TaskServiceTest {
 
         assertEquals(2, reloaded.search("dupont").size());
     }
+
+    @Test
+    void completedTasksAlwaysSortAfterUnfinishedOnesInDayView() {
+        Task first = new Task("Tache A", "", today);
+        Task second = new Task("Tache B", "", today);
+        Task third = new Task("Tache C", "", today);
+        service.addTask(first);
+        service.addTask(second);
+        service.addTask(third);
+
+        // "first" was added earliest (lowest manual order) but is completed,
+        // so it must still end up after the two unfinished tasks.
+        service.setCompleted(first, true);
+
+        assertEquals(List.of(second.getId(), third.getId(), first.getId()),
+                service.getTasksForDate(today).stream().map(Task::getId).toList());
+    }
+
+    @Test
+    void completedTasksAlwaysSortAfterUnfinishedOnesInSearchResults() {
+        Task recentCompleted = new Task("Dupont recent", "", today);
+        recentCompleted.setCompleted(true);
+        Task olderPending = new Task("Dupont ancien", "", today.minusDays(5));
+        service.addTask(recentCompleted);
+        service.addTask(olderPending);
+
+        List<Task> results = service.search("dupont");
+
+        // Without the completed-last rule, the more recent date would come
+        // first; completion status must take priority over date.
+        assertEquals(List.of(olderPending.getId(), recentCompleted.getId()),
+                results.stream().map(Task::getId).toList());
+    }
 }

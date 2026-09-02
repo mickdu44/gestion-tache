@@ -17,6 +17,7 @@ public class Task {
     private String description;
     private LocalDate date;
     private boolean completed;
+    private TaskStatus status = TaskStatus.A_FAIRE;
     private LocalDateTime createdAt;
     private int order;
     private Priority priority = Priority.MOYENNE;
@@ -74,8 +75,38 @@ public class Task {
         return completed;
     }
 
+    /**
+     * Sets the completed flag. Kept for the callers that only care about the
+     * done/not-done boolean (the list checkbox, recurrence, reporting): it
+     * stays in sync with {@link #status}, without erasing an "en cours"
+     * status when simply toggling completion off (see {@link #setStatus}
+     * for why this stays correct regardless of JSON property order when
+     * loading a file that has both fields).
+     */
     public void setCompleted(boolean completed) {
         this.completed = completed;
+        if (completed) {
+            this.status = TaskStatus.TERMINEE;
+        } else if (this.status == TaskStatus.TERMINEE) {
+            this.status = TaskStatus.A_FAIRE;
+        }
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the workflow status and keeps {@link #completed} consistent with
+     * it. Because {@link #setCompleted} only ever moves {@code status} to or
+     * away from {@link TaskStatus#TERMINEE} (never introduces EN_COURS on
+     * its own), calling this and {@link #setCompleted} in either order while
+     * deserializing a self-consistent JSON file always converges to the same
+     * result.
+     */
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+        this.completed = status == TaskStatus.TERMINEE;
     }
 
     public LocalDateTime getCreatedAt() {

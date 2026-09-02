@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -41,6 +42,7 @@
             </HBox>
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <ComboBox fx:id="priorityFilterCombo"/>
+                <CheckBox fx:id="sortByPriorityCheckBox" text="Trier par priorite"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>
                 <Button fx:id="clearSearchButton" text="✕" onAction="#onClearSearch" styleClass="icon-button"/>
@@ -63,6 +65,7 @@
                         <Label fx:id="detailDateLabel" styleClass="detail-date"/>
                         <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
                         <Label fx:id="detailRecurrenceLabel" styleClass="recurrence-badge"/>
+                        <Label fx:id="detailStatusBadge" styleClass="status-in-progress-badge"/>
                     </HBox>
                     <Separator/>
                     <Label text="Description" styleClass="detail-section-title"/>

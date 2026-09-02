@@ -2,6 +2,7 @@ package com.gestiontache.repository;
 
 import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
+import com.gestiontache.model.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -106,5 +107,61 @@ class TaskRepositoryTest {
 
         assertTrue(reloaded.getSubtasks().isEmpty());
         assertTrue(reloaded.getAttachments().isEmpty());
+    }
+
+    @Test
+    void statusSurvivesARoundTrip() {
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        LocalDate day = LocalDate.of(2026, 3, 10);
+        Task task = new Task("Preparer le dossier", "", day);
+        task.setStatus(TaskStatus.EN_COURS);
+
+        repository.saveDay(day, List.of(task));
+
+        Task reloaded = repository.loadAll().get(0);
+        assertEquals(TaskStatus.EN_COURS, reloaded.getStatus());
+        assertFalse(reloaded.isCompleted());
+    }
+
+    /**
+     * A day file written before the "status" field existed only has the
+     * legacy "completed" boolean. Loading it must still derive the right
+     * status instead of failing or silently defaulting everything to
+     * A_FAIRE regardless of completion.
+     */
+    @Test
+    void legacyFileWithOnlyCompletedFieldDerivesStatus() throws Exception {
+        Path daysDir = tempDir.resolve("days");
+        Files.createDirectories(daysDir);
+        String legacyJson = "[ {\n"
+                + "  \"id\" : \"legacy-1\",\n"
+                + "  \"title\" : \"Tache terminee historique\",\n"
+                + "  \"description\" : \"\",\n"
+                + "  \"date\" : \"2026-03-10\",\n"
+                + "  \"completed\" : true,\n"
+                + "  \"createdAt\" : \"2026-03-10T09:00:00\",\n"
+                + "  \"order\" : 0,\n"
+                + "  \"priority\" : \"MOYENNE\"\n"
+                + "}, {\n"
+                + "  \"id\" : \"legacy-2\",\n"
+                + "  \"title\" : \"Tache non terminee historique\",\n"
+                + "  \"description\" : \"\",\n"
+                + "  \"date\" : \"2026-03-10\",\n"
+                + "  \"completed\" : false,\n"
+                + "  \"createdAt\" : \"2026-03-10T09:05:00\",\n"
+                + "  \"order\" : 1,\n"
+                + "  \"priority\" : \"MOYENNE\"\n"
+                + "} ]";
+        Files.writeString(daysDir.resolve("2026-03-10.json"), legacyJson);
+
+        TaskRepository repository = new TaskRepository(daysDir);
+        List<Task> loaded = repository.loadAll();
+
+        Task completedLegacy = loaded.stream().filter(t -> t.getId().equals("legacy-1")).findFirst().orElseThrow();
+        Task pendingLegacy = loaded.stream().filter(t -> t.getId().equals("legacy-2")).findFirst().orElseThrow();
+        assertEquals(TaskStatus.TERMINEE, completedLegacy.getStatus());
+        assertTrue(completedLegacy.isCompleted());
+        assertEquals(TaskStatus.A_FAIRE, pendingLegacy.getStatus());
+        assertFalse(pendingLegacy.isCompleted());
     }
 }

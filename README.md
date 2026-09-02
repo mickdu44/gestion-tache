@@ -20,10 +20,19 @@ ne quitte la machine : tout est stocke en local.
   priorite, date), avec case a cocher pour marquer une tache comme terminee.
 - **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
   affiche sous forme de badge colore dans la liste et le detail, et
-  filtrable via le menu deroulant de la barre du haut.
+  filtrable via le menu deroulant de la barre du haut. Une case "Trier
+  par priorite" permet de trier la liste affichee par priorite (Haute
+  d'abord) au lieu de l'ordre manuel ; le glisser-deposer est alors
+  desactive puisqu'il n'y a plus d'ordre manuel a modifier.
+- **Statut "En cours"** : en plus de terminee/non terminee, une tache
+  peut etre marquee "En cours" (menu deroulant "Statut" du formulaire),
+  affiche sous forme de badge distinct dans la liste et le detail.
+- **Les taches terminees passent en fin de liste** : quel que soit
+  l'affichage (jour, semaine, recherche, tri par priorite), les taches
+  terminees sont toujours regroupees a la fin de la liste.
 - **Detail de tache** : cliquer sur une tache affiche son detail complet
-  (titre, date, priorite, description, sous-taches, pieces jointes) dans
-  un panneau lateral qui occupe la moitie de la fenetre.
+  (titre, date, priorite, statut, description, sous-taches, pieces
+  jointes) dans un panneau lateral qui occupe la moitie de la fenetre.
 - **Texte enrichi** : la description accepte une mise en forme simple —
   `**gras**`, `*italique*`, des lignes commencant par `- ` pour une liste
   a puces, et `[texte](url)` pour un lien cliquable — rendue dans le
@@ -157,7 +166,8 @@ sauvegarde.
 src/main/java/com/gestiontache/
   MainApp.java                     Point d'entree JavaFX
   Launcher.java                    Point d'entree pour le jar shade (java -jar)
-  model/Task.java, SubTask.java    Modele d'une tache et de ses sous-taches
+  model/Task.java, SubTask.java,
+    TaskStatus.java                Modele d'une tache, ses sous-taches et son statut
   repository/TaskRepository.java   Persistance JSON locale (un fichier par jour)
   service/TaskService.java         Logique metier (recherche, report, CRUD)
   controller/                      Controleurs JavaFX (FXML)
