@@ -474,3 +474,19 @@
     -fx-font-style: italic;
     -fx-text-fill: #9ca3af;
 }
+
+.description-preview-scroll,
+.description-preview-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.description-preview-scroll {
+    -fx-min-height: 90;
+    -fx-pref-height: 90;
+    -fx-cursor: hand;
+}
+
+.description-preview {
+    -fx-padding: 4 2 4 2;
+    -fx-cursor: hand;
+}

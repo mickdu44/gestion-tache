@@ -44,12 +44,15 @@ ne quitte la machine : tout est stocke en local.
   les autres champs (priorite, recurrence, statut, date, sous-taches,
   pieces jointes) sont enregistres immediatement. Plus besoin de rouvrir
   une fenetre pour corriger une tache existante.
-- **Texte enrichi** : la description accepte une mise en forme simple —
-  `**gras**`, `*italique*`, des lignes commencant par `- ` pour une liste
-  a puces, et `[texte](url)` pour un lien cliquable. Une petite barre
-  d'outils (boutons G, I, Liste, Lien) insere cette syntaxe sans avoir a
-  la taper a la main, aussi bien dans le formulaire d'ajout que dans le
-  panneau de detail.
+- **Texte enrichi, avec apercu Markdown** : la description accepte une mise
+  en forme simple — `**gras**`, `*italique*`, des lignes commencant par
+  `- ` pour une liste a puces, et `[texte](url)` pour un lien cliquable.
+  En consultation, la description s'affiche deja mise en forme (gras,
+  italique, puces, lien cliquable) plutot que sous sa syntaxe brute ;
+  cliquer dessus bascule en modification pour voir/editer le texte brut
+  avec sa barre d'outils (boutons G, I, Liste, Lien), et cliquer ailleurs
+  revient a l'apercu forme. Ce comportement est le meme dans le formulaire
+  d'ajout et dans le panneau de detail.
 - **Pieces jointes** : chaque tache peut avoir un ou plusieurs fichiers
   locaux attaches (bouton "Ajouter une piece jointe" dans le formulaire
   d'ajout ou dans le panneau de detail) ; ils apparaissent comme des liens
