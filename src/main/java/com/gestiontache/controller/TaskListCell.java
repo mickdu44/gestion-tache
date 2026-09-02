@@ -3,6 +3,7 @@ package com.gestiontache.controller;
 import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
+import com.gestiontache.model.TaskStatus;
 import com.gestiontache.util.DescriptionFormatter;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -42,6 +43,7 @@ public class TaskListCell extends ListCell<Task> {
     private final Label descriptionLabel = new Label();
     private final Label priorityBadge = new Label();
     private final Label recurrenceBadge = new Label();
+    private final Label statusBadge = new Label();
     private final Label subtaskBadge = new Label();
     private final Label dateBadge = new Label();
     private final Button editButton = new Button("Modifier");
@@ -71,6 +73,7 @@ public class TaskListCell extends ListCell<Task> {
         descriptionLabel.setWrapText(true);
         priorityBadge.getStyleClass().add("priority-badge");
         recurrenceBadge.getStyleClass().add("recurrence-badge");
+        statusBadge.getStyleClass().add("status-in-progress-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
         dateBadge.getStyleClass().add("task-date-badge");
         editButton.getStyleClass().add("icon-button");
@@ -87,8 +90,8 @@ public class TaskListCell extends ListCell<Task> {
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, recurrenceBadge, subtaskBadge, dateBadge,
-                editButton, deleteButton);
+        root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, recurrenceBadge, statusBadge,
+                subtaskBadge, dateBadge, editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
@@ -220,6 +223,11 @@ public class TaskListCell extends ListCell<Task> {
         recurrenceBadge.setText("🔁 " + task.getRecurrence());
         recurrenceBadge.setVisible(recurring);
         recurrenceBadge.setManaged(recurring);
+
+        boolean inProgress = task.getStatus() == TaskStatus.EN_COURS;
+        statusBadge.setText("⏳ " + TaskStatus.EN_COURS);
+        statusBadge.setVisible(inProgress);
+        statusBadge.setManaged(inProgress);
 
         boolean hasSubtasks = !task.getSubtasks().isEmpty();
         if (hasSubtasks) {

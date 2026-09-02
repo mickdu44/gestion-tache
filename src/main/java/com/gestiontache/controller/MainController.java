@@ -5,6 +5,7 @@ import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
+import com.gestiontache.model.TaskStatus;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
 import com.gestiontache.util.DescriptionFormatter;
@@ -41,6 +42,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -88,6 +90,8 @@ public class MainController {
     @FXML
     private ToggleGroup viewModeGroup;
     @FXML
+    private CheckBox sortByPriorityCheckBox;
+    @FXML
     private Label detailPlaceholder;
     @FXML
     private VBox detailContent;
@@ -99,6 +103,8 @@ public class MainController {
     private Label detailPriorityLabel;
     @FXML
     private Label detailRecurrenceLabel;
+    @FXML
+    private Label detailStatusBadge;
     @FXML
     private TextFlow detailDescriptionFlow;
     @FXML
@@ -146,6 +152,8 @@ public class MainController {
             searchField.clear();
             refresh();
         });
+
+        sortByPriorityCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> refresh());
 
         taskListView.setCellFactory(list -> new TaskListCell(
                 this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
@@ -297,11 +305,13 @@ public class MainController {
 
     /**
      * Manual reordering only makes sense when browsing a single day with no
-     * priority filter applied (otherwise the list view holds a subset of the
-     * day's tasks, and a drag-and-drop move could not be persisted meaningfully).
+     * priority filter applied and no priority sort active (otherwise the
+     * list view holds a subset or a recomputed order of the day's tasks,
+     * and a drag-and-drop move could not be persisted meaningfully).
      */
     private boolean isReorderEnabled() {
-        return !isSearching() && viewMode == ViewMode.JOUR && ALL_PRIORITIES.equals(priorityFilterCombo.getValue());
+        return !isSearching() && viewMode == ViewMode.JOUR && ALL_PRIORITIES.equals(priorityFilterCombo.getValue())
+                && !sortByPriorityCheckBox.isSelected();
     }
 
     /** The date badge (which day a task belongs to) is only useful when a single day isn't the whole view. */
@@ -324,6 +334,7 @@ public class MainController {
                     existing != null ? existing.getDescription() : null,
                     existing != null ? existing.getPriority() : Priority.MOYENNE,
                     existing != null ? existing.getRecurrence() : Recurrence.AUCUNE,
+                    existing != null ? existing.getStatus() : TaskStatus.A_FAIRE,
                     existing != null ? existing.getDate() : defaultDate,
                     existing != null ? existing.getSubtasks() : null,
                     existing != null ? existing.getAttachments() : null);
@@ -343,6 +354,7 @@ public class MainController {
                     Task task = new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
                     task.setPriority(controller.getPriority());
                     task.setRecurrence(controller.getRecurrence());
+                    task.setStatus(controller.getStatus());
                     task.setSubtasks(controller.getSubtasks());
                     task.setAttachments(controller.getAttachments());
                     return task;
@@ -351,6 +363,7 @@ public class MainController {
                 existing.setDescription(controller.getDescription());
                 existing.setPriority(controller.getPriority());
                 existing.setRecurrence(controller.getRecurrence());
+                existing.setStatus(controller.getStatus());
                 existing.setDate(controller.getDate());
                 existing.setSubtasks(controller.getSubtasks());
                 existing.setAttachments(controller.getAttachments());
@@ -405,6 +418,14 @@ public class MainController {
         if (priorityFilter != null && !ALL_PRIORITIES.equals(priorityFilter)) {
             tasks = tasks.stream()
                     .filter(t -> priorityFilter.equals(t.getPriority().toString()))
+                    .collect(Collectors.toList());
+        }
+
+        if (sortByPriorityCheckBox.isSelected()) {
+            // Stable sort: completed tasks stay last, priority order (Haute
+            // first) applies within each of the two groups.
+            tasks = tasks.stream()
+                    .sorted(Comparator.comparing(Task::isCompleted).thenComparing(Task::getPriority))
                     .collect(Collectors.toList());
         }
 
@@ -472,6 +493,10 @@ public class MainController {
         detailRecurrenceLabel.setText("🔁 " + task.getRecurrence());
         detailRecurrenceLabel.setVisible(recurring);
         detailRecurrenceLabel.setManaged(recurring);
+        boolean inProgress = task.getStatus() == TaskStatus.EN_COURS;
+        detailStatusBadge.setText("⏳ " + TaskStatus.EN_COURS);
+        detailStatusBadge.setVisible(inProgress);
+        detailStatusBadge.setManaged(inProgress);
         String description = task.getDescription();
         if (description == null || description.isBlank()) {
             Text empty = new Text("(Aucune description)");

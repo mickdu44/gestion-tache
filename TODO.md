@@ -20,6 +20,9 @@ Liste des evolutions et corrections envisagees pour l'application.
 - [x] Les tâches non terminées sont automatiquement reportées au lendemain
 - [x] Ajouter une icone a l'application.
 - [x] Stockage journalier : un fichier JSON par jour (`~/.gestion-tache/days/AAAA-MM-JJ.json`) au lieu d'un unique fichier global ; migration automatique depuis l'ancien format au premier lancement.
+- [x] Tri des taches par priorite (case a cocher "Trier par priorite").
+- [x] Les taches terminees passent toujours en fin de liste, quel que soit l'affichage.
+- [x] Statut "En cours" sur une tache, en plus de terminee/non terminee.
 
 ## Corrections / robustesse technique
 

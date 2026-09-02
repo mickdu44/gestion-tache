@@ -30,18 +30,29 @@ public class TaskService {
         this.tasks = repository.loadAll();
     }
 
+    /**
+     * Tasks for a single day, completed tasks always sorted after unfinished
+     * ones, and otherwise following the manual drag-and-drop order.
+     */
     public List<Task> getTasksForDate(LocalDate date) {
         return tasks.stream()
                 .filter(t -> date.equals(t.getDate()))
-                .sorted(Comparator.comparingInt(Task::getOrder).thenComparing(Task::getCreatedAt))
+                .sorted(Comparator.comparing(Task::isCompleted)
+                        .thenComparingInt(Task::getOrder)
+                        .thenComparing(Task::getCreatedAt))
                 .collect(Collectors.toList());
     }
 
-    /** Searches every task, across every day file, by title or description. */
+    /**
+     * Searches every task, across every day file, by title or description.
+     * Completed tasks always sort after unfinished ones, most recent date
+     * first within each group.
+     */
     public List<Task> search(String keyword) {
         return tasks.stream()
                 .filter(t -> t.matches(keyword))
-                .sorted(Comparator.comparing(Task::getDate).reversed())
+                .sorted(Comparator.comparing(Task::isCompleted)
+                        .thenComparing(Comparator.comparing(Task::getDate).reversed()))
                 .collect(Collectors.toList());
     }
 
