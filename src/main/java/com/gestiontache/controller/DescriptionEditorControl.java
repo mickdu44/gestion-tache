@@ -106,6 +106,7 @@ public class DescriptionEditorControl extends VBox {
         urlDialog.setTitle("Inserer un lien");
         urlDialog.setHeaderText(null);
         urlDialog.setContentText("URL du lien :");
+        urlDialog.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
         Optional<String> result = urlDialog.showAndWait();
         if (result.isEmpty() || result.get().isBlank()) {
             return;

@@ -6,6 +6,10 @@ ne quitte la machine : tout est stocke en local.
 
 ## Fonctionnalites
 
+- **Style Windows 11 (Fluent Design)** : fond neutre type Mica, cartes
+  blanches aux coins arrondis avec ombre douce, accent bleu Windows 11 sur
+  les boutons principaux, cases a cocher et champs actifs, et champs de
+  saisie avec soulignement plutot que des cadres pleins.
 - **Vue par jour** : navigation entre les jours (precedent / suivant /
   aujourd'hui) pour afficher les taches du jour selectionne.
 - **Vue semaine** : bascule "Jour" / "Semaine" dans la barre du haut pour
