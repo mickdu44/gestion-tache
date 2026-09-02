@@ -1,22 +1,199 @@
-.root-pane {
-    -fx-background-color: #f4f5f7;
-    -fx-font-family: "Segoe UI", Arial, sans-serif;
+/*
+ * Windows 11 (Fluent Design) look: Mica-like neutral background, white
+ * "card" surfaces with soft rounded corners and subtle elevation shadows,
+ * a single accent color (Windows default blue, #0067C0) for anything
+ * interactive/selected, and Segoe UI throughout.
+ */
+
+.root {
+    -win-accent: #0067c0;
+    -win-accent-hover: #005a9e;
+    -win-accent-pressed: #004c87;
+    -win-accent-soft: rgba(0, 103, 192, 0.10);
+    -win-surface: #ffffff;
+    -win-bg: #f3f3f3;
+    -win-border: rgba(0, 0, 0, 0.08);
+    -win-border-strong: rgba(0, 0, 0, 0.14);
+    -win-text: #1a1a1a;
+    -win-text-secondary: #5c5c5c;
+    -win-text-disabled: #a6a6a6;
+    -win-control: #fbfbfb;
+    -win-control-hover: #f5f5f5;
+    -win-control-pressed: #e8e8e8;
+
+    -fx-font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
+    -fx-text-fill: -win-text;
+    -fx-accent: -win-accent;
 }
+
+.root-pane {
+    -fx-background-color: -win-bg;
+}
+
+/* ---------- Generic controls (Fluent baseline for every plain Button,
+   TextField, ComboBox, DatePicker, CheckBox in the app) ---------- */
+
+.button {
+    -fx-background-color: -win-control;
+    -fx-background-radius: 4;
+    -fx-background-insets: 0;
+    -fx-border-color: -win-border-strong;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-text-fill: -win-text;
+    -fx-padding: 6 14 6 14;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: -win-control-hover;
+}
+
+.button:pressed,
+.button:armed {
+    -fx-background-color: -win-control-pressed;
+}
+
+.button:focused {
+    -fx-border-color: -win-accent;
+}
+
+.button:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+.text-field,
+.combo-box-base,
+.date-picker {
+    -fx-background-color: -win-surface;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent transparent -win-border-strong transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-text-fill: -win-text;
+}
+
+.text-field:focused,
+.combo-box-base:focused,
+.date-picker:focused {
+    -fx-border-color: transparent transparent -win-accent transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -win-surface;
+    -fx-background-radius: 6;
+    -fx-border-color: -win-border;
+    -fx-border-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12, 0, 0, 3);
+}
+
+.combo-box-popup .list-cell:filled:hover,
+.date-picker-popup > * > .day-cell:hover {
+    -fx-background-color: -win-accent-soft;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: -win-accent-soft;
+    -fx-text-fill: -win-accent;
+}
+
+.date-picker-popup {
+    -fx-background-color: -win-surface;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12, 0, 0, 3);
+}
+
+.date-picker-popup > * > .day-cell:selected {
+    -fx-background-color: -win-accent;
+    -fx-background-radius: 4;
+}
+
+.check-box > .box {
+    -fx-background-color: -win-surface;
+    -fx-border-color: -win-border-strong;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+
+.check-box:selected > .box {
+    -fx-background-color: -win-accent;
+    -fx-border-color: -win-accent;
+}
+
+.check-box:selected > .box > .mark {
+    -fx-background-color: white;
+}
+
+.split-pane {
+    -fx-background-color: transparent;
+    -fx-box-border: transparent;
+}
+
+.split-pane-divider {
+    -fx-background-color: -win-border;
+    -fx-padding: 0 1 0 1;
+}
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: rgba(0, 0, 0, 0.22);
+    -fx-background-radius: 6;
+}
+
+.scroll-bar .track,
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.dialog-pane {
+    -fx-background-color: -win-surface;
+}
+
+.dialog-pane > .header-panel {
+    -fx-background-color: -win-surface;
+}
+
+.dialog-pane > .header-panel .label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -win-text;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-border-color: transparent transparent -win-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.dialog-pane > .button-bar > .container {
+    -fx-padding: 10 4 4 4;
+}
+
+/* ---------- App-specific classes ---------- */
 
 .date-label {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #23272f;
+    -fx-text-fill: -win-text;
 }
 
 .status-label {
     -fx-font-size: 12px;
-    -fx-text-fill: #6b7280;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .count-label {
     -fx-font-size: 12px;
-    -fx-text-fill: #6b7280;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .task-list {
@@ -30,19 +207,21 @@
 }
 
 .task-row {
-    -fx-background-color: white;
+    -fx-background-color: -win-surface;
     -fx-background-radius: 8;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 1);
+    -fx-border-color: -win-border;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 1);
 }
 
 .task-row-drag-over {
-    -fx-border-color: #2563eb;
+    -fx-border-color: -win-accent;
     -fx-border-width: 0 0 0 4;
     -fx-border-radius: 8;
 }
 
 .drag-handle {
-    -fx-text-fill: #9ca3af;
+    -fx-text-fill: -win-text-disabled;
     -fx-font-size: 14px;
     -fx-cursor: move;
     -fx-padding: 0 2 0 0;
@@ -51,33 +230,33 @@
 .task-title {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1f2937;
+    -fx-text-fill: -win-text;
 }
 
 .task-title-completed {
     -fx-strikethrough: true;
-    -fx-text-fill: #9ca3af;
+    -fx-text-fill: -win-text-disabled;
 }
 
 .task-description {
     -fx-font-size: 12px;
-    -fx-text-fill: #6b7280;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .subtask-count-badge {
-    -fx-background-color: #ede9fe;
+    -fx-background-color: #f3e8fd;
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
-    -fx-text-fill: #5b21b6;
+    -fx-text-fill: #6b3fa0;
 }
 
 .task-date-badge {
-    -fx-background-color: #e5e7eb;
+    -fx-background-color: #eeeeee;
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
-    -fx-text-fill: #374151;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .priority-badge {
@@ -88,93 +267,118 @@
 }
 
 .priority-badge.priority-haute {
-    -fx-background-color: #fee2e2;
-    -fx-text-fill: #991b1b;
+    -fx-background-color: #fde7e9;
+    -fx-text-fill: #c42b1c;
 }
 
 .priority-badge.priority-moyenne {
-    -fx-background-color: #fef3c7;
-    -fx-text-fill: #92400e;
+    -fx-background-color: #fff4ce;
+    -fx-text-fill: #8a6d00;
 }
 
 .priority-badge.priority-basse {
-    -fx-background-color: #dbeafe;
-    -fx-text-fill: #1e40af;
+    -fx-background-color: #dbeffd;
+    -fx-text-fill: #005a9e;
 }
 
 .recurrence-badge {
-    -fx-background-color: #ede9fe;
+    -fx-background-color: #f3e8fd;
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
-    -fx-text-fill: #5b21b6;
+    -fx-text-fill: #6b3fa0;
 }
 
 .status-in-progress-badge {
-    -fx-background-color: #fef3c7;
+    -fx-background-color: #fff4ce;
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #92400e;
+    -fx-text-fill: #8a6d00;
 }
 
 .bottom-bar {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e5e7eb transparent transparent transparent;
+    -fx-background-color: -win-surface;
+    -fx-border-color: -win-border transparent transparent transparent;
     -fx-border-width: 1;
 }
 
 .primary-button {
-    -fx-background-color: #2563eb;
+    -fx-background-color: -win-accent;
+    -fx-border-color: transparent;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 .primary-button:hover {
-    -fx-background-color: #1d4ed8;
+    -fx-background-color: -win-accent-hover;
+}
+
+.primary-button:pressed,
+.primary-button:armed {
+    -fx-background-color: -win-accent-pressed;
 }
 
 .icon-button {
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 4;
     -fx-cursor: hand;
 }
 
+.icon-button:hover {
+    -fx-background-color: -win-control-hover;
+}
+
+.icon-button:pressed,
+.icon-button:armed {
+    -fx-background-color: -win-control-pressed;
+}
+
 .view-toggle {
-    -fx-background-color: #f4f5f7;
-    -fx-text-fill: #374151;
-    -fx-background-radius: 0;
+    -fx-background-color: transparent;
+    -fx-border-color: -win-border-strong;
+    -fx-text-fill: -win-text-secondary;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.view-toggle:hover {
+    -fx-background-color: -win-control-hover;
 }
 
 .view-toggle:selected {
-    -fx-background-color: #2563eb;
+    -fx-background-color: -win-accent;
+    -fx-border-color: -win-accent;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 .detail-pane {
-    -fx-background-color: #ffffff;
-    -fx-border-color: transparent transparent transparent #e5e7eb;
+    -fx-background-color: -win-surface;
+    -fx-border-color: transparent transparent transparent -win-border;
     -fx-border-width: 1;
 }
 
 .detail-placeholder {
     -fx-font-size: 12px;
-    -fx-text-fill: #9ca3af;
+    -fx-text-fill: -win-text-disabled;
 }
 
 .detail-title-field {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1f2937;
+    -fx-text-fill: -win-text;
     -fx-background-color: transparent;
     -fx-background-insets: 0;
+    -fx-border-width: 0;
     -fx-padding: 4 0 4 0;
 }
 
 .detail-title-field:focused {
-    -fx-background-color: white;
-    -fx-border-color: #2563eb;
+    -fx-background-color: -win-surface;
+    -fx-border-color: transparent transparent -win-accent transparent;
     -fx-border-width: 0 0 1 0;
     -fx-padding: 4 0 3 0;
 }
@@ -182,12 +386,12 @@
 .detail-section-title {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #9ca3af;
+    -fx-text-fill: -win-text-disabled;
 }
 
 .md-text {
     -fx-font-size: 13px;
-    -fx-fill: #374151;
+    -fx-fill: -win-text-secondary;
 }
 
 .md-bold {
@@ -201,27 +405,27 @@
 .detail-description-empty {
     -fx-font-size: 13px;
     -fx-font-style: italic;
-    -fx-fill: #9ca3af;
+    -fx-fill: -win-text-disabled;
 }
 
 .stats-summary {
     -fx-font-size: 14px;
-    -fx-text-fill: #1f2937;
+    -fx-text-fill: -win-text;
 }
 
 .md-link {
     -fx-font-size: 13px;
-    -fx-text-fill: #2563eb;
+    -fx-text-fill: -win-accent;
 }
 
 .subtask-row {
     -fx-font-size: 13px;
-    -fx-text-fill: #374151;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .attachment-link {
     -fx-font-size: 13px;
-    -fx-text-fill: #2563eb;
+    -fx-text-fill: -win-accent;
 }
 
 .dialog-scroll,
@@ -241,7 +445,7 @@
 
 .subtask-edit-row,
 .attachment-edit-row {
-    -fx-background-color: #f4f5f7;
+    -fx-background-color: -win-bg;
     -fx-background-radius: 6;
     -fx-padding: 4 8 4 8;
 }
@@ -249,5 +453,5 @@
 .subtask-edit-label,
 .attachment-chip-label {
     -fx-font-size: 13px;
-    -fx-text-fill: #374151;
+    -fx-text-fill: -win-text-secondary;
 }

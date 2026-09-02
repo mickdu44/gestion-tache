@@ -325,6 +325,7 @@ public class MainController {
         alert.setTitle("Supprimer la tache");
         alert.setHeaderText("Supprimer \"" + task.getTitle() + "\" ?");
         alert.setContentText("Cette action est definitive.");
+        alert.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             taskService.deleteTask(task);
@@ -520,6 +521,7 @@ public class MainController {
         alert.setTitle("Gestion des taches");
         alert.setHeaderText(null);
         alert.setContentText(message);
+        alert.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
         alert.showAndWait();
     }
 

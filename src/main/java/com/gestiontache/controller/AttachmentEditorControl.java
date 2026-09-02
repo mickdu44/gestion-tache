@@ -96,6 +96,7 @@ public class AttachmentEditorControl extends VBox {
             alert.setTitle("Gestion des taches");
             alert.setHeaderText(null);
             alert.setContentText("Impossible d'ouvrir le fichier : " + path);
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
             alert.showAndWait();
         }
     }
