@@ -1,26 +1,42 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.util.DescriptionFormatter;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.IndexRange;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 
 import java.util.Optional;
 
 /**
- * A small rich-text editor: a formatting toolbar (bold, italic, bullet
- * list, link) above a {@link TextArea}, inserting the markdown syntax that
- * {@link com.gestiontache.util.DescriptionFormatter} understands. Shared by
- * the task creation dialog and the inline detail-panel editor so the
- * formatting logic only lives in one place.
+ * A small rich-text editor for task descriptions, in two modes: a rendered
+ * Markdown "consultation" view (shown by default, using
+ * {@link DescriptionFormatter}) that switches to a raw "modification" view
+ * (a formatting toolbar above a {@link TextArea}, holding the unrendered
+ * markdown source) when clicked, and back to the rendered view once the
+ * text area loses focus. Shared by the task creation dialog and the inline
+ * detail-panel editor so the formatting logic only lives in one place.
  */
 public class DescriptionEditorControl extends VBox {
 
+    private static final String EMPTY_PLACEHOLDER = "(Aucune description)";
+
     private final TextArea descriptionArea = new TextArea();
+    private final TextFlow previewFlow = new TextFlow();
+    private final ScrollPane previewScroll = new ScrollPane(previewFlow);
+    private final VBox editBox;
 
     public DescriptionEditorControl() {
         Button boldButton = new Button("G");
@@ -46,10 +62,37 @@ public class DescriptionEditorControl extends VBox {
         markdownHint.setShowDelay(Duration.millis(200));
         descriptionArea.setTooltip(markdownHint);
         descriptionArea.setPromptText("Astuce : **gras**, *italique*, \"- \" pour une liste, [texte](url) pour un lien.");
+        descriptionArea.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                // Defer the check: a mouse click on a toolbar button also
+                // blurs descriptionArea for an instant (the button grabs
+                // focus first), before the button's action runs and calls
+                // descriptionArea.requestFocus() again. Only leave edit mode
+                // once focus has actually settled outside editBox.
+                Platform.runLater(() -> {
+                    if (!isWithinEditBox(currentFocusOwner())) {
+                        showPreview();
+                    }
+                });
+            }
+        });
 
-        VBox.setVgrow(descriptionArea, javafx.scene.layout.Priority.ALWAYS);
+        VBox.setVgrow(descriptionArea, Priority.ALWAYS);
+        editBox = new VBox(4, toolbar, descriptionArea);
+        VBox.setVgrow(editBox, Priority.ALWAYS);
+
+        previewFlow.getStyleClass().add("description-preview");
+        previewScroll.setFitToWidth(true);
+        previewScroll.getStyleClass().add("description-preview-scroll");
+        previewScroll.setOnMouseClicked(e -> {
+            if (!(e.getTarget() instanceof Hyperlink)) {
+                enterEditMode();
+            }
+        });
+        VBox.setVgrow(previewScroll, Priority.ALWAYS);
+
         setSpacing(4);
-        getChildren().setAll(toolbar, descriptionArea);
+        showPreview();
     }
 
     public TextArea getDescriptionArea() {
@@ -62,6 +105,42 @@ public class DescriptionEditorControl extends VBox {
 
     public void setText(String text) {
         descriptionArea.setText(text == null ? "" : text);
+        showPreview();
+    }
+
+    /** Switches to the raw, editable Markdown source view and focuses it. */
+    private void enterEditMode() {
+        getChildren().setAll(editBox);
+        descriptionArea.requestFocus();
+        descriptionArea.positionCaret(descriptionArea.getText().length());
+    }
+
+    private Node currentFocusOwner() {
+        Scene scene = descriptionArea.getScene();
+        return scene != null ? scene.getFocusOwner() : null;
+    }
+
+    /** True if {@code node} is the toolbar/text area box itself or one of its descendants. */
+    private boolean isWithinEditBox(Node node) {
+        for (Node current = node; current != null; current = current.getParent()) {
+            if (current == editBox) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Switches to the rendered Markdown "consultation" view. */
+    private void showPreview() {
+        String text = descriptionArea.getText();
+        if (text == null || text.isBlank()) {
+            Text placeholder = new Text(EMPTY_PLACEHOLDER);
+            placeholder.getStyleClass().add("detail-description-empty");
+            previewFlow.getChildren().setAll(placeholder);
+        } else {
+            previewFlow.getChildren().setAll(DescriptionFormatter.toNodes(text));
+        }
+        getChildren().setAll(previewScroll);
     }
 
     private void wrapSelection(String prefix, String suffix) {
