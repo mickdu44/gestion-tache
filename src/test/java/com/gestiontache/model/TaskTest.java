@@ -73,6 +73,24 @@ class TaskTest {
         assertTrue(task.isCompleted());
     }
 
+    @Test
+    void newTaskStartsWithACreationHistoryEntry() {
+        Task task = new Task("Tache", "", today);
+
+        assertEquals(1, task.getHistory().size());
+        assertEquals("Tache creee", task.getHistory().get(0).getMessage());
+    }
+
+    @Test
+    void addHistoryEntryAppendsANewDatedEntry() {
+        Task task = new Task("Tache", "", today);
+
+        task.addHistoryEntry("Titre modifie");
+
+        assertEquals(2, task.getHistory().size());
+        assertEquals("Titre modifie", task.getHistory().get(1).getMessage());
+    }
+
     /**
      * Jackson may call setCompleted(boolean) and setStatus(TaskStatus) in
      * either order when deserializing a JSON file that (self-consistently)

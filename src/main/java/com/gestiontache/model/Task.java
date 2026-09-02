@@ -24,6 +24,7 @@ public class Task {
     private Recurrence recurrence = Recurrence.AUCUNE;
     private List<SubTask> subtasks = new ArrayList<>();
     private List<String> attachments = new ArrayList<>();
+    private List<HistoryEntry> history = new ArrayList<>();
 
     public Task() {
         // Required for JSON deserialization.
@@ -37,6 +38,7 @@ public class Task {
         this.completed = false;
         this.createdAt = LocalDateTime.now();
         this.order = 0;
+        addHistoryEntry("Tache creee");
     }
 
     public String getId() {
@@ -157,6 +159,20 @@ public class Task {
 
     public void setAttachments(List<String> attachments) {
         this.attachments = attachments != null ? attachments : new ArrayList<>();
+    }
+
+    /** Chronological (oldest first) log of changes made to this task. */
+    public List<HistoryEntry> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<HistoryEntry> history) {
+        this.history = history != null ? history : new ArrayList<>();
+    }
+
+    /** Appends a dated entry to this task's change history. */
+    public void addHistoryEntry(String message) {
+        history.add(new HistoryEntry(LocalDateTime.now(), message));
     }
 
     /**

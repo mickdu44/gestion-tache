@@ -251,3 +251,22 @@
     -fx-font-size: 13px;
     -fx-text-fill: #374151;
 }
+
+.detail-history-list {
+    -fx-background-color: transparent;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+}
+
+.detail-history-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 3 6 3 6;
+}
+
+.detail-history-list .placeholder .label {
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-text-fill: #9ca3af;
+}

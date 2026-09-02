@@ -57,6 +57,11 @@ ne quitte la machine : tout est stocke en local.
   la liste.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
+- **Historique des changements** : chaque tache garde un journal date de
+  ses modifications (creation, titre, description, priorite, recurrence,
+  statut, date, sous-taches, pieces jointes, marquage termine/non
+  termine, report), visible dans une section "Historique" en bas du
+  panneau de detail, du plus recent au plus ancien.
 - **Taches recurrentes** : une tache peut etre configuree en Quotidienne,
   Hebdomadaire ou Jours ouvres ; la marquer comme terminee cree
   automatiquement la prochaine occurrence (non terminee) a la bonne date.

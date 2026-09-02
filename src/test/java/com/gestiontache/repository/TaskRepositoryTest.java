@@ -110,6 +110,48 @@ class TaskRepositoryTest {
     }
 
     @Test
+    void historySurvivesARoundTrip() {
+        TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
+        LocalDate day = LocalDate.of(2026, 3, 10);
+        Task task = new Task("Preparer le dossier", "", day);
+        task.addHistoryEntry("Titre modifie : \"a\" -> \"b\"");
+
+        repository.saveDay(day, List.of(task));
+
+        Task reloaded = repository.loadAll().get(0);
+        assertEquals(2, reloaded.getHistory().size());
+        assertEquals("Tache creee", reloaded.getHistory().get(0).getMessage());
+        assertEquals("Titre modifie : \"a\" -> \"b\"", reloaded.getHistory().get(1).getMessage());
+    }
+
+    /**
+     * A day file written before the "history" field existed has no such
+     * key at all. Loading it must not fail and must expose an empty history
+     * rather than null.
+     */
+    @Test
+    void legacyFileWithoutHistoryFieldLoadsWithEmptyHistory() throws Exception {
+        Path daysDir = tempDir.resolve("days");
+        Files.createDirectories(daysDir);
+        String legacyJson = "[ {\n"
+                + "  \"id\" : \"legacy-1\",\n"
+                + "  \"title\" : \"Tache historique\",\n"
+                + "  \"description\" : \"\",\n"
+                + "  \"date\" : \"2026-03-10\",\n"
+                + "  \"completed\" : false,\n"
+                + "  \"createdAt\" : \"2026-03-10T09:00:00\",\n"
+                + "  \"order\" : 0,\n"
+                + "  \"priority\" : \"MOYENNE\"\n"
+                + "} ]";
+        Files.writeString(daysDir.resolve("2026-03-10.json"), legacyJson);
+
+        TaskRepository repository = new TaskRepository(daysDir);
+        List<Task> loaded = repository.loadAll();
+
+        assertTrue(loaded.get(0).getHistory().isEmpty());
+    }
+
+    @Test
     void statusSurvivesARoundTrip() {
         TaskRepository repository = new TaskRepository(tempDir.resolve("days"));
         LocalDate day = LocalDate.of(2026, 3, 10);
