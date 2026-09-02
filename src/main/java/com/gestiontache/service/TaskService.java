@@ -6,10 +6,13 @@ import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.repository.TaskRepository;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +24,9 @@ import java.util.stream.Collectors;
  * files always reflect the current state.
  */
 public class TaskService {
+
+    private static final DateTimeFormatter HISTORY_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("d MMM yyyy", Locale.FRENCH);
 
     private final TaskRepository repository;
     private final List<Task> tasks;
@@ -110,6 +116,9 @@ public class TaskService {
     public void setCompleted(Task task, boolean completed) {
         boolean wasCompleted = task.isCompleted();
         task.setCompleted(completed);
+        if (wasCompleted != completed) {
+            task.addHistoryEntry(completed ? "Marquee terminee" : "Marquee non terminee");
+        }
         if (completed && !wasCompleted && task.getRecurrence() != Recurrence.AUCUNE) {
             Task next = createNextOccurrence(task);
             persistDates(Set.of(task.getDate(), next.getDate()));
@@ -124,6 +133,8 @@ public class TaskService {
         next.setPriority(task.getPriority());
         next.setRecurrence(task.getRecurrence());
         next.setOrder(nextOrderForDate(nextDate));
+        next.setHistory(new ArrayList<>());
+        next.addHistoryEntry("Creee automatiquement (recurrence " + task.getRecurrence() + ")");
         tasks.add(next);
         return next;
     }
@@ -139,8 +150,11 @@ public class TaskService {
         LocalDate next = date.plusDays(1);
         int order = nextOrderForDate(next);
         for (Task t : unfinished) {
+            LocalDate previous = t.getDate();
             t.setDate(next);
             t.setOrder(order++);
+            t.addHistoryEntry("Reportee du " + previous.format(HISTORY_DATE_FORMAT)
+                    + " au " + next.format(HISTORY_DATE_FORMAT));
         }
         if (!unfinished.isEmpty()) {
             persistDates(Set.of(date, next));
@@ -162,8 +176,11 @@ public class TaskService {
 
         int order = nextOrderForDate(today);
         for (Task t : overdue) {
+            LocalDate previous = t.getDate();
             t.setDate(today);
             t.setOrder(order++);
+            t.addHistoryEntry("Reportee automatiquement du " + previous.format(HISTORY_DATE_FORMAT)
+                    + " au " + today.format(HISTORY_DATE_FORMAT));
         }
         if (!overdue.isEmpty()) {
             persistDates(affectedDates);

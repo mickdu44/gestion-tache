@@ -77,6 +77,9 @@
                     <Separator/>
                     <Label text="Pieces jointes" styleClass="detail-section-title"/>
                     <AttachmentEditorControl fx:id="detailAttachmentEditor"/>
+                    <Separator/>
+                    <Label text="Historique" styleClass="detail-section-title"/>
+                    <ListView fx:id="detailHistoryList" styleClass="detail-history-list" prefHeight="140" VBox.vgrow="NEVER"/>
                 </VBox>
             </VBox>
         </SplitPane>

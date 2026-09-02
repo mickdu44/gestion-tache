@@ -1,7 +1,9 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.model.HistoryEntry;
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Recurrence;
+import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.model.TaskStatus;
@@ -29,17 +31,21 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MainController {
@@ -50,6 +56,10 @@ public class MainController {
             DateTimeFormatter.ofPattern("d MMMM", Locale.FRENCH);
     private static final DateTimeFormatter WEEK_DAY_MONTH_YEAR_FORMAT =
             DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.FRENCH);
+    private static final DateTimeFormatter HISTORY_DATE_FORMAT =
+            DateTimeFormatter.ofPattern("d MMM yyyy", Locale.FRENCH);
+    private static final DateTimeFormatter HISTORY_TIMESTAMP_FORMAT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
     private static final String ALL_PRIORITIES = "Toutes priorites";
 
     private enum ViewMode { JOUR, SEMAINE }
@@ -104,6 +114,8 @@ public class MainController {
     private SubtaskEditorControl detailSubtaskEditor;
     @FXML
     private AttachmentEditorControl detailAttachmentEditor;
+    @FXML
+    private ListView<String> detailHistoryList;
 
     private TaskService taskService;
     private LocalDate currentDate;
@@ -168,48 +180,122 @@ public class MainController {
         detailPriorityCombo.getItems().setAll(Priority.values());
         detailRecurrenceCombo.getItems().setAll(Recurrence.values());
         detailStatusCombo.getItems().setAll(TaskStatus.values());
+        detailHistoryList.setPlaceholder(new Label("Aucun changement enregistre."));
 
         detailTitleField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
-                persistDetail(task -> task.setTitle(detailTitleField.getText().trim()));
+                String newTitle = detailTitleField.getText().trim();
+                persistDetail(task -> task.setTitle(newTitle),
+                        task -> titleChangeMessage(task.getTitle(), newTitle));
             }
         });
         detailDescriptionEditor.getDescriptionArea().focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
-                persistDetail(task -> task.setDescription(detailDescriptionEditor.getText()));
+                String newDescription = detailDescriptionEditor.getText();
+                persistDetail(task -> task.setDescription(newDescription),
+                        task -> Objects.equals(task.getDescription(), newDescription) ? null : "Description modifiee");
             }
         });
         detailPriorityCombo.valueProperty().addListener((obs, oldValue, newValue) ->
-                persistDetail(task -> task.setPriority(newValue)));
+                persistDetail(task -> task.setPriority(newValue),
+                        task -> "Priorite changee : " + oldValue + " -> " + newValue));
         detailRecurrenceCombo.valueProperty().addListener((obs, oldValue, newValue) ->
-                persistDetail(task -> task.setRecurrence(newValue)));
+                persistDetail(task -> task.setRecurrence(newValue),
+                        task -> "Recurrence changee : " + oldValue + " -> " + newValue));
         detailStatusCombo.valueProperty().addListener((obs, oldValue, newValue) ->
-                persistDetail(task -> task.setStatus(newValue)));
+                persistDetail(task -> task.setStatus(newValue),
+                        task -> "Statut change : " + oldValue + " -> " + newValue));
         detailDatePicker.valueProperty().addListener((obs, oldValue, newValue) -> {
             if (newValue != null) {
-                persistDetail(task -> task.setDate(newValue));
+                persistDetail(task -> task.setDate(newValue),
+                        task -> (oldValue == null || oldValue.equals(newValue)) ? null
+                                : "Date deplacee : " + oldValue.format(HISTORY_DATE_FORMAT)
+                                        + " -> " + newValue.format(HISTORY_DATE_FORMAT));
             }
         });
-        detailSubtaskEditor.setOnChange(() ->
-                persistDetail(task -> task.setSubtasks(new ArrayList<>(detailSubtaskEditor.getSubtasks()))));
-        detailAttachmentEditor.setOnChange(() ->
-                persistDetail(task -> task.setAttachments(new ArrayList<>(detailAttachmentEditor.getAttachments()))));
+        detailSubtaskEditor.setOnChange(() -> {
+            List<SubTask> newSubtasks = new ArrayList<>(detailSubtaskEditor.getSubtasks());
+            persistDetail(task -> task.setSubtasks(newSubtasks),
+                    task -> describeSubtaskChange(task.getSubtasks(), newSubtasks));
+        });
+        detailAttachmentEditor.setOnChange(() -> {
+            List<String> newAttachments = new ArrayList<>(detailAttachmentEditor.getAttachments());
+            persistDetail(task -> task.setAttachments(newAttachments),
+                    task -> describeAttachmentChange(task.getAttachments(), newAttachments));
+        });
     }
 
     /**
      * Applies {@code mutation} to the currently selected task and persists it,
      * unless the panel is still being populated (see {@link #loadingDetail}).
+     * {@code historyMessage}, if given, is evaluated against the task's state
+     * just before the mutation and, when non-null, appended to its history.
      * The list is refreshed afterwards, keeping the panel's selection and
      * focus intact.
      */
-    private void persistDetail(Consumer<Task> mutation) {
+    private void persistDetail(Consumer<Task> mutation, Function<Task, String> historyMessage) {
         if (loadingDetail || selectedTask == null) {
             return;
         }
+        String message = historyMessage != null ? historyMessage.apply(selectedTask) : null;
         mutation.accept(selectedTask);
+        if (message != null) {
+            selectedTask.addHistoryEntry(message);
+        }
         taskService.updateTask(selectedTask, selectedTaskPreviousDate);
         selectedTaskPreviousDate = selectedTask.getDate();
         refresh();
+    }
+
+    private static String titleChangeMessage(String oldTitle, String newTitle) {
+        if (Objects.equals(oldTitle, newTitle)) {
+            return null;
+        }
+        return "Titre modifie : \"" + oldTitle + "\" -> \"" + newTitle + "\"";
+    }
+
+    /** Describes the single add/remove/toggle that just happened, matching subtasks by their stable id. */
+    private static String describeSubtaskChange(List<SubTask> oldList, List<SubTask> newList) {
+        Map<String, SubTask> oldById = new HashMap<>();
+        for (SubTask s : oldList) {
+            oldById.put(s.getId(), s);
+        }
+        Map<String, SubTask> newById = new HashMap<>();
+        for (SubTask s : newList) {
+            newById.put(s.getId(), s);
+        }
+        for (SubTask s : newList) {
+            if (!oldById.containsKey(s.getId())) {
+                return "Sous-tache ajoutee : \"" + s.getTitle() + "\"";
+            }
+        }
+        for (SubTask s : oldList) {
+            if (!newById.containsKey(s.getId())) {
+                return "Sous-tache supprimee : \"" + s.getTitle() + "\"";
+            }
+        }
+        for (SubTask s : newList) {
+            SubTask previous = oldById.get(s.getId());
+            if (previous != null && previous.isCompleted() != s.isCompleted()) {
+                return "Sous-tache " + (s.isCompleted() ? "cochee" : "decochee") + " : \"" + s.getTitle() + "\"";
+            }
+        }
+        return null;
+    }
+
+    /** Describes the single add/remove that just happened, matching attachments by their file path. */
+    private static String describeAttachmentChange(List<String> oldList, List<String> newList) {
+        for (String path : newList) {
+            if (!oldList.contains(path)) {
+                return "Piece jointe ajoutee : \"" + new File(path).getName() + "\"";
+            }
+        }
+        for (String path : oldList) {
+            if (!newList.contains(path)) {
+                return "Piece jointe supprimee : \"" + new File(path).getName() + "\"";
+            }
+        }
+        return null;
     }
 
     /**
@@ -511,6 +597,11 @@ public class MainController {
             detailDescriptionEditor.setText(task.getDescription());
             detailSubtaskEditor.setSubtasks(task.getSubtasks());
             detailAttachmentEditor.setAttachments(task.getAttachments());
+            detailHistoryList.getItems().setAll(
+                    task.getHistory().stream()
+                            .sorted(Comparator.comparing(HistoryEntry::getTimestamp).reversed())
+                            .map(entry -> entry.getTimestamp().format(HISTORY_TIMESTAMP_FORMAT) + " - " + entry.getMessage())
+                            .collect(Collectors.toList()));
         } finally {
             loadingDetail = false;
         }

@@ -189,6 +189,72 @@ class TaskServiceTest {
     }
 
     @Test
+    void completingATaskLogsAHistoryEntry() {
+        Task task = new Task("Tache simple", "", today);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        assertTrue(task.getHistory().stream().anyMatch(h -> h.getMessage().equals("Marquee terminee")));
+    }
+
+    @Test
+    void uncompletingATaskLogsADistinctHistoryEntry() {
+        Task task = new Task("Tache simple", "", today);
+        service.addTask(task);
+        service.setCompleted(task, true);
+
+        service.setCompleted(task, false);
+
+        assertTrue(task.getHistory().stream().anyMatch(h -> h.getMessage().equals("Marquee non terminee")));
+    }
+
+    @Test
+    void reCompletingAnAlreadyCompletedTaskDoesNotLogADuplicateEntry() {
+        Task task = new Task("Pointage", "", today);
+        service.addTask(task);
+        service.setCompleted(task, true);
+        int countAfterFirst = task.getHistory().size();
+
+        service.setCompleted(task, true);
+
+        assertEquals(countAfterFirst, task.getHistory().size());
+    }
+
+    @Test
+    void reportingUnfinishedTasksLogsAHistoryEntry() {
+        Task task = new Task("Relire le contrat", "", today);
+        service.addTask(task);
+
+        service.reportUnfinishedToNextDay(today);
+
+        assertTrue(task.getHistory().stream().anyMatch(h -> h.getMessage().startsWith("Reportee du")));
+    }
+
+    @Test
+    void reportingOverdueTasksLogsAHistoryEntry() {
+        Task task = new Task("Preparer la reunion", "", today.minusDays(3));
+        service.addTask(task);
+
+        service.reportOverdueToToday(today);
+
+        assertTrue(task.getHistory().stream().anyMatch(h -> h.getMessage().startsWith("Reportee automatiquement du")));
+    }
+
+    @Test
+    void recurringOccurrenceHasItsOwnCreationHistoryEntryReferencingTheRecurrence() {
+        Task task = new Task("Arroser les plantes", "", today);
+        task.setRecurrence(Recurrence.QUOTIDIENNE);
+        service.addTask(task);
+
+        service.setCompleted(task, true);
+
+        Task next = service.getTasksForDate(today.plusDays(1)).get(0);
+        assertEquals(1, next.getHistory().size());
+        assertTrue(next.getHistory().get(0).getMessage().contains("recurrence"));
+    }
+
+    @Test
     void computeStatisticsCountsTotalsAndCompletionRate() {
         Task done = new Task("Tache faite", "", today);
         done.setCompleted(true);
