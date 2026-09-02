@@ -16,8 +16,10 @@ ne quitte la machine : tout est stocke en local.
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
   le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
   precedent/suivant.
-- **Ajout / modification / suppression** de taches (titre, description,
-  priorite, date), avec case a cocher pour marquer une tache comme terminee.
+- **Ajout / modification / suppression** de taches. L'ajout se fait via un
+  formulaire dedie ; la modification se fait directement dans le panneau
+  de detail (voir ci-dessous), avec case a cocher pour marquer une tache
+  comme terminee.
 - **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
   affiche sous forme de badge colore dans la liste et le detail, et
   filtrable via le menu deroulant de la barre du haut. Une case "Trier
@@ -30,23 +32,29 @@ ne quitte la machine : tout est stocke en local.
 - **Les taches terminees passent en fin de liste** : quel que soit
   l'affichage (jour, semaine, recherche, tri par priorite), les taches
   terminees sont toujours regroupees a la fin de la liste.
-- **Detail de tache** : cliquer sur une tache affiche son detail complet
-  (titre, date, priorite, statut, description, sous-taches, pieces
-  jointes) dans un panneau lateral qui occupe la moitie de la fenetre.
+- **Detail de tache editable** : cliquer sur une tache affiche son detail
+  complet (titre, priorite, recurrence, statut, date, description,
+  sous-taches, pieces jointes) dans un panneau lateral qui occupe la
+  moitie de la fenetre, et chaque champ y est directement modifiable.
+  Le titre et la description sont enregistres quand on quitte le champ ;
+  les autres champs (priorite, recurrence, statut, date, sous-taches,
+  pieces jointes) sont enregistres immediatement. Plus besoin de rouvrir
+  une fenetre pour corriger une tache existante.
 - **Texte enrichi** : la description accepte une mise en forme simple —
   `**gras**`, `*italique*`, des lignes commencant par `- ` pour une liste
-  a puces, et `[texte](url)` pour un lien cliquable — rendue dans le
-  panneau de detail. Une petite barre d'outils dans le formulaire
-  d'ajout/edition (boutons G, I, Liste, Lien) insere cette syntaxe sans
-  avoir a la taper a la main.
+  a puces, et `[texte](url)` pour un lien cliquable. Une petite barre
+  d'outils (boutons G, I, Liste, Lien) insere cette syntaxe sans avoir a
+  la taper a la main, aussi bien dans le formulaire d'ajout que dans le
+  panneau de detail.
 - **Pieces jointes** : chaque tache peut avoir un ou plusieurs fichiers
-  locaux attaches (bouton "Ajouter une piece jointe" dans le formulaire) ;
-  ils apparaissent comme des liens cliquables dans le panneau de detail,
-  qui les ouvrent avec l'application par defaut du systeme.
+  locaux attaches (bouton "Ajouter une piece jointe" dans le formulaire
+  d'ajout ou dans le panneau de detail) ; ils apparaissent comme des liens
+  cliquables qui les ouvrent avec l'application par defaut du systeme.
 - **Sous-taches / checklist** : chaque tache peut avoir une liste de
-  sous-taches cochables, ajoutees/supprimees depuis le formulaire et
-  cochees directement depuis le panneau de detail ou depuis un badge de
-  progression (ex. "2/5") visible dans la liste.
+  sous-taches cochables, ajoutees, cochees et supprimees directement
+  depuis le panneau de detail (ou depuis le formulaire d'ajout pour une
+  nouvelle tache), avec un badge de progression (ex. "2/5") visible dans
+  la liste.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Taches recurrentes** : une tache peut etre configuree en Quotidienne,

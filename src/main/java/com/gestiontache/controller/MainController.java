@@ -2,15 +2,11 @@ package com.gestiontache.controller;
 
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Recurrence;
-import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
 import com.gestiontache.model.TaskStatus;
 import com.gestiontache.repository.TaskRepository;
 import com.gestiontache.service.TaskService;
-import com.gestiontache.util.DescriptionFormatter;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -26,17 +22,13 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 
-import java.awt.Desktop;
-import java.io.File;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -47,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MainController {
@@ -96,31 +89,32 @@ public class MainController {
     @FXML
     private VBox detailContent;
     @FXML
-    private Label detailTitleLabel;
+    private TextField detailTitleField;
     @FXML
-    private Label detailDateLabel;
+    private ComboBox<Priority> detailPriorityCombo;
     @FXML
-    private Label detailPriorityLabel;
+    private ComboBox<Recurrence> detailRecurrenceCombo;
     @FXML
-    private Label detailRecurrenceLabel;
+    private ComboBox<TaskStatus> detailStatusCombo;
     @FXML
-    private Label detailStatusBadge;
+    private DatePicker detailDatePicker;
     @FXML
-    private TextFlow detailDescriptionFlow;
+    private DescriptionEditorControl detailDescriptionEditor;
     @FXML
-    private Label detailSubtasksTitle;
+    private SubtaskEditorControl detailSubtaskEditor;
     @FXML
-    private VBox detailSubtasksBox;
-    @FXML
-    private Separator detailAttachmentsSeparator;
-    @FXML
-    private Label detailAttachmentsTitle;
-    @FXML
-    private VBox detailAttachmentsBox;
+    private AttachmentEditorControl detailAttachmentEditor;
 
     private TaskService taskService;
     private LocalDate currentDate;
     private ViewMode viewMode = ViewMode.JOUR;
+
+    /** The task currently shown/edited in the right-hand panel, or null when none is selected. */
+    private Task selectedTask;
+    /** The selected task's date before an in-panel edit, so a date change can move it between days. */
+    private LocalDate selectedTaskPreviousDate;
+    /** Set while populating the detail panel, so programmatic field updates don't re-trigger a persist. */
+    private boolean loadingDetail;
 
     @FXML
     private void initialize() {
@@ -156,7 +150,7 @@ public class MainController {
         sortByPriorityCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> refresh());
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
+                this::onToggleCompleted, this::onDeleteTask,
                 isSearching(), isReorderEnabled(), this::onTasksReordered));
 
         taskListView.getSelectionModel().selectedItemProperty()
@@ -164,6 +158,57 @@ public class MainController {
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
+        setUpDetailPanel();
+
+        refresh();
+    }
+
+    /** Wires the editable detail panel's controls to persist on change, guarded during population. */
+    private void setUpDetailPanel() {
+        detailPriorityCombo.getItems().setAll(Priority.values());
+        detailRecurrenceCombo.getItems().setAll(Recurrence.values());
+        detailStatusCombo.getItems().setAll(TaskStatus.values());
+
+        detailTitleField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                persistDetail(task -> task.setTitle(detailTitleField.getText().trim()));
+            }
+        });
+        detailDescriptionEditor.getDescriptionArea().focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                persistDetail(task -> task.setDescription(detailDescriptionEditor.getText()));
+            }
+        });
+        detailPriorityCombo.valueProperty().addListener((obs, oldValue, newValue) ->
+                persistDetail(task -> task.setPriority(newValue)));
+        detailRecurrenceCombo.valueProperty().addListener((obs, oldValue, newValue) ->
+                persistDetail(task -> task.setRecurrence(newValue)));
+        detailStatusCombo.valueProperty().addListener((obs, oldValue, newValue) ->
+                persistDetail(task -> task.setStatus(newValue)));
+        detailDatePicker.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue != null) {
+                persistDetail(task -> task.setDate(newValue));
+            }
+        });
+        detailSubtaskEditor.setOnChange(() ->
+                persistDetail(task -> task.setSubtasks(new ArrayList<>(detailSubtaskEditor.getSubtasks()))));
+        detailAttachmentEditor.setOnChange(() ->
+                persistDetail(task -> task.setAttachments(new ArrayList<>(detailAttachmentEditor.getAttachments()))));
+    }
+
+    /**
+     * Applies {@code mutation} to the currently selected task and persists it,
+     * unless the panel is still being populated (see {@link #loadingDetail}).
+     * The list is refreshed afterwards, keeping the panel's selection and
+     * focus intact.
+     */
+    private void persistDetail(Consumer<Task> mutation) {
+        if (loadingDetail || selectedTask == null) {
+            return;
+        }
+        mutation.accept(selectedTask);
+        taskService.updateTask(selectedTask, selectedTaskPreviousDate);
+        selectedTaskPreviousDate = selectedTask.getDate();
         refresh();
     }
 
@@ -212,7 +257,7 @@ public class MainController {
     @FXML
     private void onAddTask() {
         LocalDate defaultDate = isSearching() ? LocalDate.now() : currentDate;
-        openTaskDialog(null, defaultDate).ifPresent(task -> {
+        openTaskDialog(defaultDate).ifPresent(task -> {
             taskService.addTask(task);
             refresh();
         });
@@ -275,14 +320,6 @@ public class MainController {
         refresh();
     }
 
-    private void onEditTask(Task task) {
-        LocalDate previousDate = task.getDate();
-        openTaskDialog(task, task.getDate()).ifPresent(updated -> {
-            taskService.updateTask(updated, previousDate);
-            refresh();
-        });
-    }
-
     private void onDeleteTask(Task task) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Supprimer la tache");
@@ -319,28 +356,16 @@ public class MainController {
         return isSearching() || viewMode == ViewMode.SEMAINE;
     }
 
-    /**
-     * Opens the add/edit dialog. When {@code existing} is null a new task is
-     * created and returned on confirmation; otherwise the existing task is
-     * mutated in place and returned.
-     */
-    private Optional<Task> openTaskDialog(Task existing, LocalDate defaultDate) {
+    /** Opens the dialog to create a new task, returned on confirmation. Editing happens inline in the detail panel. */
+    private Optional<Task> openTaskDialog(LocalDate defaultDate) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/gestiontache/task-dialog.fxml"));
             DialogPane pane = loader.load();
             TaskDialogController controller = loader.getController();
-            controller.fill(
-                    existing != null ? existing.getTitle() : null,
-                    existing != null ? existing.getDescription() : null,
-                    existing != null ? existing.getPriority() : Priority.MOYENNE,
-                    existing != null ? existing.getRecurrence() : Recurrence.AUCUNE,
-                    existing != null ? existing.getStatus() : TaskStatus.A_FAIRE,
-                    existing != null ? existing.getDate() : defaultDate,
-                    existing != null ? existing.getSubtasks() : null,
-                    existing != null ? existing.getAttachments() : null);
+            controller.fill(null, null, Priority.MOYENNE, Recurrence.AUCUNE, TaskStatus.A_FAIRE, defaultDate, null, null);
 
             Dialog<Task> dialog = new Dialog<>();
-            dialog.setTitle(existing == null ? "Nouvelle tache" : "Modifier la tache");
+            dialog.setTitle("Nouvelle tache");
             dialog.setDialogPane(pane);
 
             Button okButton = (Button) pane.lookupButton(ButtonType.OK);
@@ -350,24 +375,13 @@ public class MainController {
                 if (buttonType != ButtonType.OK) {
                     return null;
                 }
-                if (existing == null) {
-                    Task task = new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
-                    task.setPriority(controller.getPriority());
-                    task.setRecurrence(controller.getRecurrence());
-                    task.setStatus(controller.getStatus());
-                    task.setSubtasks(controller.getSubtasks());
-                    task.setAttachments(controller.getAttachments());
-                    return task;
-                }
-                existing.setTitle(controller.getTitle());
-                existing.setDescription(controller.getDescription());
-                existing.setPriority(controller.getPriority());
-                existing.setRecurrence(controller.getRecurrence());
-                existing.setStatus(controller.getStatus());
-                existing.setDate(controller.getDate());
-                existing.setSubtasks(controller.getSubtasks());
-                existing.setAttachments(controller.getAttachments());
-                return existing;
+                Task task = new Task(controller.getTitle(), controller.getDescription(), controller.getDate());
+                task.setPriority(controller.getPriority());
+                task.setRecurrence(controller.getRecurrence());
+                task.setStatus(controller.getStatus());
+                task.setSubtasks(controller.getSubtasks());
+                task.setAttachments(controller.getAttachments());
+                return task;
             });
 
             return dialog.showAndWait();
@@ -395,7 +409,7 @@ public class MainController {
         }
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onEditTask, this::onDeleteTask,
+                this::onToggleCompleted, this::onDeleteTask,
                 showDateBadge(), isReorderEnabled(), this::onTasksReordered));
 
         LocalDate weekStart = currentDate.with(DayOfWeek.MONDAY);
@@ -472,7 +486,7 @@ public class MainController {
         }
     }
 
-    /** Displays the given task's full detail in the right-hand panel, or a placeholder when null. */
+    /** Populates the editable right-hand panel with the given task's detail, or shows a placeholder when null. */
     private void showTaskDetail(Task task) {
         boolean hasSelection = task != null;
         detailPlaceholder.setVisible(!hasSelection);
@@ -480,95 +494,24 @@ public class MainController {
         detailContent.setVisible(hasSelection);
         detailContent.setManaged(hasSelection);
 
+        selectedTask = task;
         if (!hasSelection) {
             return;
         }
+        selectedTaskPreviousDate = task.getDate();
 
-        detailTitleLabel.setText(task.getTitle());
-        detailDateLabel.setText(capitalize(task.getDate().format(DAY_FORMAT)));
-        detailPriorityLabel.setText(task.getPriority().toString());
-        detailPriorityLabel.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
-        detailPriorityLabel.getStyleClass().add("priority-" + task.getPriority().name().toLowerCase(Locale.ROOT));
-        boolean recurring = task.getRecurrence() != Recurrence.AUCUNE;
-        detailRecurrenceLabel.setText("🔁 " + task.getRecurrence());
-        detailRecurrenceLabel.setVisible(recurring);
-        detailRecurrenceLabel.setManaged(recurring);
-        boolean inProgress = task.getStatus() == TaskStatus.EN_COURS;
-        detailStatusBadge.setText("⏳ " + TaskStatus.EN_COURS);
-        detailStatusBadge.setVisible(inProgress);
-        detailStatusBadge.setManaged(inProgress);
-        String description = task.getDescription();
-        if (description == null || description.isBlank()) {
-            Text empty = new Text("(Aucune description)");
-            empty.getStyleClass().add("detail-description-empty");
-            detailDescriptionFlow.getChildren().setAll(empty);
-        } else {
-            detailDescriptionFlow.getChildren().setAll(DescriptionFormatter.toNodes(description));
-        }
-
-        showSubtasks(task);
-        showAttachments(task);
-    }
-
-    private void showSubtasks(Task task) {
-        List<SubTask> subtasks = task.getSubtasks();
-        boolean hasSubtasks = !subtasks.isEmpty();
-        detailSubtasksTitle.setVisible(hasSubtasks);
-        detailSubtasksTitle.setManaged(hasSubtasks);
-        detailSubtasksBox.setVisible(hasSubtasks);
-        detailSubtasksBox.setManaged(hasSubtasks);
-        if (!hasSubtasks) {
-            detailSubtasksBox.getChildren().clear();
-            return;
-        }
-        long done = subtasks.stream().filter(SubTask::isCompleted).count();
-        detailSubtasksTitle.setText("Sous-taches (" + done + "/" + subtasks.size() + ")");
-
-        List<javafx.scene.Node> rows = new ArrayList<>();
-        for (SubTask subtask : subtasks) {
-            CheckBox checkBox = new CheckBox(subtask.getTitle());
-            checkBox.setSelected(subtask.isCompleted());
-            checkBox.getStyleClass().add("subtask-row");
-            checkBox.setOnAction(e -> onToggleSubtask(task, subtask, checkBox.isSelected()));
-            rows.add(checkBox);
-        }
-        detailSubtasksBox.getChildren().setAll(rows);
-    }
-
-    private void onToggleSubtask(Task task, SubTask subtask, boolean completed) {
-        subtask.setCompleted(completed);
-        taskService.updateTask(task, task.getDate());
-        refresh();
-    }
-
-    private void showAttachments(Task task) {
-        List<String> attachments = task.getAttachments();
-        boolean hasAttachments = !attachments.isEmpty();
-        detailAttachmentsSeparator.setVisible(hasAttachments);
-        detailAttachmentsSeparator.setManaged(hasAttachments);
-        detailAttachmentsTitle.setVisible(hasAttachments);
-        detailAttachmentsTitle.setManaged(hasAttachments);
-        detailAttachmentsBox.setVisible(hasAttachments);
-        detailAttachmentsBox.setManaged(hasAttachments);
-        if (!hasAttachments) {
-            detailAttachmentsBox.getChildren().clear();
-            return;
-        }
-        List<javafx.scene.Node> rows = new ArrayList<>();
-        for (String path : attachments) {
-            Hyperlink link = new Hyperlink(new File(path).getName());
-            link.getStyleClass().add("attachment-link");
-            link.setOnAction(e -> openAttachment(path));
-            rows.add(link);
-        }
-        detailAttachmentsBox.getChildren().setAll(rows);
-    }
-
-    private void openAttachment(String path) {
+        loadingDetail = true;
         try {
-            Desktop.getDesktop().open(new File(path));
-        } catch (Exception e) {
-            showInfo("Impossible d'ouvrir le fichier : " + path);
+            detailTitleField.setText(task.getTitle());
+            detailPriorityCombo.setValue(task.getPriority());
+            detailRecurrenceCombo.setValue(task.getRecurrence());
+            detailStatusCombo.setValue(task.getStatus());
+            detailDatePicker.setValue(task.getDate());
+            detailDescriptionEditor.setText(task.getDescription());
+            detailSubtaskEditor.setSubtasks(task.getSubtasks());
+            detailAttachmentEditor.setAttachments(task.getAttachments());
+        } finally {
+            loadingDetail = false;
         }
     }
 

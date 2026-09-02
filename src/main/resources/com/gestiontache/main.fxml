@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.gestiontache.controller.AttachmentEditorControl?>
+<?import com.gestiontache.controller.DescriptionEditorControl?>
+<?import com.gestiontache.controller.SubtaskEditorControl?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -7,7 +10,6 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
@@ -17,7 +19,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.gestiontache.controller.MainController"
@@ -60,24 +61,22 @@
                 <Label fx:id="detailPlaceholder" text="Selectionnez une tache dans la liste pour afficher son detail."
                        wrapText="true" styleClass="detail-placeholder"/>
                 <VBox fx:id="detailContent" spacing="12" visible="false" managed="false" VBox.vgrow="ALWAYS">
-                    <Label fx:id="detailTitleLabel" wrapText="true" styleClass="detail-title"/>
+                    <TextField fx:id="detailTitleField" styleClass="detail-title-field"/>
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Label fx:id="detailDateLabel" styleClass="detail-date"/>
-                        <Label fx:id="detailPriorityLabel" styleClass="priority-badge"/>
-                        <Label fx:id="detailRecurrenceLabel" styleClass="recurrence-badge"/>
-                        <Label fx:id="detailStatusBadge" styleClass="status-in-progress-badge"/>
+                        <ComboBox fx:id="detailPriorityCombo"/>
+                        <ComboBox fx:id="detailRecurrenceCombo"/>
+                        <ComboBox fx:id="detailStatusCombo"/>
+                        <DatePicker fx:id="detailDatePicker"/>
                     </HBox>
                     <Separator/>
                     <Label text="Description" styleClass="detail-section-title"/>
-                    <ScrollPane fitToWidth="true" styleClass="detail-description-scroll" VBox.vgrow="ALWAYS">
-                        <TextFlow fx:id="detailDescriptionFlow"/>
-                    </ScrollPane>
+                    <DescriptionEditorControl fx:id="detailDescriptionEditor" VBox.vgrow="ALWAYS"/>
                     <Separator/>
-                    <Label fx:id="detailSubtasksTitle" text="Sous-taches" styleClass="detail-section-title"/>
-                    <VBox fx:id="detailSubtasksBox" spacing="4"/>
-                    <Separator fx:id="detailAttachmentsSeparator"/>
-                    <Label fx:id="detailAttachmentsTitle" text="Pieces jointes" styleClass="detail-section-title"/>
-                    <VBox fx:id="detailAttachmentsBox" spacing="4"/>
+                    <Label text="Sous-taches" styleClass="detail-section-title"/>
+                    <SubtaskEditorControl fx:id="detailSubtaskEditor"/>
+                    <Separator/>
+                    <Label text="Pieces jointes" styleClass="detail-section-title"/>
+                    <AttachmentEditorControl fx:id="detailAttachmentEditor"/>
                 </VBox>
             </VBox>
         </SplitPane>
