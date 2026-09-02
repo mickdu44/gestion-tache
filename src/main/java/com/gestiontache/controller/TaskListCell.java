@@ -28,7 +28,8 @@ import java.util.function.Consumer;
 /**
  * Renders a single task: a checkbox to mark it done, its title/description,
  * a priority badge, the date it belongs to (shown only while browsing
- * search results) and edit/delete actions. When browsing a single day
+ * search results) and a delete action. Editing happens inline in the
+ * detail panel when the row is selected. When browsing a single day
  * without any priority filter active, rows can be dragged to reorder the
  * tasks manually.
  */
@@ -46,22 +47,19 @@ public class TaskListCell extends ListCell<Task> {
     private final Label statusBadge = new Label();
     private final Label subtaskBadge = new Label();
     private final Label dateBadge = new Label();
-    private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
     private final HBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
-    private final Consumer<Task> onEdit;
     private final Consumer<Task> onDelete;
     private final boolean showDateBadge;
     private final boolean reorderEnabled;
     private final Runnable onReorder;
 
-    public TaskListCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit,
+    public TaskListCell(BiConsumer<Task, Boolean> onToggle,
                          Consumer<Task> onDelete, boolean showDateBadge, boolean reorderEnabled,
                          Runnable onReorder) {
         this.onToggle = onToggle;
-        this.onEdit = onEdit;
         this.onDelete = onDelete;
         this.showDateBadge = showDateBadge;
         this.reorderEnabled = reorderEnabled;
@@ -76,7 +74,6 @@ public class TaskListCell extends ListCell<Task> {
         statusBadge.getStyleClass().add("status-in-progress-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
         dateBadge.getStyleClass().add("task-date-badge");
-        editButton.getStyleClass().add("icon-button");
         deleteButton.getStyleClass().add("icon-button");
 
         titleLabel.setMinWidth(0);
@@ -91,7 +88,7 @@ public class TaskListCell extends ListCell<Task> {
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
         root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, recurrenceBadge, statusBadge,
-                subtaskBadge, dateBadge, editButton, deleteButton);
+                subtaskBadge, dateBadge, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
@@ -105,12 +102,6 @@ public class TaskListCell extends ListCell<Task> {
             Task task = getItem();
             if (task != null) {
                 this.onToggle.accept(task, doneCheckBox.isSelected());
-            }
-        });
-        editButton.setOnAction(e -> {
-            Task task = getItem();
-            if (task != null) {
-                this.onEdit.accept(task);
             }
         });
         deleteButton.setOnAction(e -> {
