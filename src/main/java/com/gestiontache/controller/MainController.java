@@ -29,6 +29,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -62,7 +63,7 @@ public class MainController {
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
     private static final String ALL_PRIORITIES = "Toutes priorites";
 
-    private enum ViewMode { JOUR, SEMAINE }
+    private enum ViewMode { JOUR, SEMAINE, KANBAN }
 
     @FXML
     private ComboBox<String> priorityFilterCombo;
@@ -91,6 +92,8 @@ public class MainController {
     @FXML
     private ToggleButton weekViewButton;
     @FXML
+    private ToggleButton kanbanViewButton;
+    @FXML
     private ToggleGroup viewModeGroup;
     @FXML
     private CheckBox sortByPriorityCheckBox;
@@ -116,6 +119,20 @@ public class MainController {
     private AttachmentEditorControl detailAttachmentEditor;
     @FXML
     private ListView<String> detailHistoryList;
+    @FXML
+    private HBox kanbanBoard;
+    @FXML
+    private Label kanbanTodoHeader;
+    @FXML
+    private ListView<Task> kanbanTodoList;
+    @FXML
+    private Label kanbanInProgressHeader;
+    @FXML
+    private ListView<Task> kanbanInProgressList;
+    @FXML
+    private Label kanbanDoneHeader;
+    @FXML
+    private ListView<Task> kanbanDoneList;
 
     private TaskService taskService;
     private LocalDate currentDate;
@@ -154,7 +171,13 @@ public class MainController {
                 viewModeGroup.selectToggle(oldToggle);
                 return;
             }
-            viewMode = newToggle == weekViewButton ? ViewMode.SEMAINE : ViewMode.JOUR;
+            if (newToggle == weekViewButton) {
+                viewMode = ViewMode.SEMAINE;
+            } else if (newToggle == kanbanViewButton) {
+                viewMode = ViewMode.KANBAN;
+            } else {
+                viewMode = ViewMode.JOUR;
+            }
             searchField.clear();
             refresh();
         });
@@ -167,6 +190,14 @@ public class MainController {
 
         taskListView.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
+
+        // Kanban columns use a compact card (KanbanTaskCell) instead of
+        // TaskListCell's wide row, which doesn't fit a narrow column.
+        for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onDeleteTask));
+            kanbanList.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
+        }
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
@@ -484,6 +515,7 @@ public class MainController {
     private void refresh() {
         boolean searching = isSearching();
         boolean weekView = viewMode == ViewMode.SEMAINE;
+        boolean kanbanView = viewMode == ViewMode.KANBAN;
         prevDayButton.setDisable(searching);
         nextDayButton.setDisable(searching);
         todayButton.setDisable(searching);
@@ -491,6 +523,7 @@ public class MainController {
         datePickerNav.setDisable(searching);
         dayViewButton.setDisable(searching);
         weekViewButton.setDisable(searching);
+        kanbanViewButton.setDisable(searching);
         if (!searching) {
             datePickerNav.setValue(currentDate);
         }
@@ -556,21 +589,67 @@ public class MainController {
             countLabel.setText(done + " / " + tasks.size() + " tache(s) terminee(s)");
         }
 
-        Task previouslySelected = taskListView.getSelectionModel().getSelectedItem();
-        String previouslySelectedId = previouslySelected != null ? previouslySelected.getId() : null;
+        String previouslySelectedId = selectedTask != null ? selectedTask.getId() : null;
 
-        taskListView.getItems().setAll(tasks);
+        taskListView.setVisible(!kanbanView);
+        taskListView.setManaged(!kanbanView);
+        kanbanBoard.setVisible(kanbanView);
+        kanbanBoard.setManaged(kanbanView);
 
-        if (previouslySelectedId != null) {
-            tasks.stream()
-                    .filter(t -> previouslySelectedId.equals(t.getId()))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            t -> taskListView.getSelectionModel().select(t),
-                            () -> showTaskDetail(null));
+        if (kanbanView) {
+            showKanbanBoard(tasks, previouslySelectedId);
         } else {
+            taskListView.getItems().setAll(tasks);
+            if (previouslySelectedId != null) {
+                tasks.stream()
+                        .filter(t -> previouslySelectedId.equals(t.getId()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                t -> taskListView.getSelectionModel().select(t),
+                                () -> showTaskDetail(null));
+            } else {
+                showTaskDetail(null);
+            }
+        }
+    }
+
+    /**
+     * Splits {@code tasks} (the current day's tasks, already filtered/sorted
+     * like the flat list) into the three status columns. All three lists are
+     * repopulated before re-selecting, so only the one re-selection (if any)
+     * has the final say on what the detail panel shows.
+     */
+    private void showKanbanBoard(List<Task> tasks, String previouslySelectedId) {
+        List<Task> todo = tasks.stream().filter(t -> t.getStatus() == TaskStatus.A_FAIRE).collect(Collectors.toList());
+        List<Task> inProgress = tasks.stream().filter(t -> t.getStatus() == TaskStatus.EN_COURS).collect(Collectors.toList());
+        List<Task> done = tasks.stream().filter(t -> t.getStatus() == TaskStatus.TERMINEE).collect(Collectors.toList());
+
+        kanbanTodoHeader.setText("A faire (" + todo.size() + ")");
+        kanbanInProgressHeader.setText("En cours (" + inProgress.size() + ")");
+        kanbanDoneHeader.setText("Terminee (" + done.size() + ")");
+
+        kanbanTodoList.getItems().setAll(todo);
+        kanbanInProgressList.getItems().setAll(inProgress);
+        kanbanDoneList.getItems().setAll(done);
+
+        boolean reselected = previouslySelectedId != null
+                && (selectIfPresent(kanbanTodoList, todo, previouslySelectedId)
+                        || selectIfPresent(kanbanInProgressList, inProgress, previouslySelectedId)
+                        || selectIfPresent(kanbanDoneList, done, previouslySelectedId));
+        if (!reselected) {
             showTaskDetail(null);
         }
+    }
+
+    private static boolean selectIfPresent(ListView<Task> listView, List<Task> tasksForColumn, String id) {
+        return tasksForColumn.stream()
+                .filter(t -> id.equals(t.getId()))
+                .findFirst()
+                .map(t -> {
+                    listView.getSelectionModel().select(t);
+                    return true;
+                })
+                .orElse(false);
     }
 
     /** Populates the editable right-hand panel with the given task's detail, or shows a placeholder when null. */

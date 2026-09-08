@@ -503,6 +503,21 @@
     -fx-text-fill: #9ca3af;
 }
 
+.kanban-column {
+    -fx-background-color: -win-surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -win-border;
+    -fx-border-radius: 8;
+    -fx-padding: 10;
+    -fx-spacing: 6;
+}
+
+.kanban-column-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -win-text;
+}
+
 .description-preview-scroll,
 .description-preview-scroll > .viewport {
     -fx-background-color: transparent;

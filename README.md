@@ -16,6 +16,14 @@ ne quitte la machine : tout est stocke en local.
   afficher les taches de toute une semaine (lundi a dimanche) au lieu d'un
   seul jour, chaque tache affichant un badge avec sa date. Les boutons
   precedent/suivant avancent alors d'une semaine entiere.
+- **Vue Kanban** : bascule "Kanban" dans la barre du haut pour afficher les
+  taches du jour selectionne en trois colonnes (A faire / En cours /
+  Terminee) au lieu d'une liste unique, chaque colonne affichant son nombre
+  de taches. Cliquer une carte l'ouvre dans le panneau de detail comme
+  d'habitude ; changer son statut depuis ce panneau la deplace aussitot
+  dans la colonne correspondante. La navigation par jour, le filtre de
+  priorite et le tri par priorite restent actifs dans cette vue ; il n'y a
+  pas de glisser-deposer entre les colonnes.
 - **Calendrier de selection** : un champ de date dans la barre du haut
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
   le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
