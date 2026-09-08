@@ -31,6 +31,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +101,8 @@ public class MainController {
     @FXML
     private Label detailPlaceholder;
     @FXML
+    private VBox detailPane;
+    @FXML
     private VBox detailContent;
     @FXML
     private TextField detailTitleField;
@@ -144,6 +147,13 @@ public class MainController {
     private LocalDate selectedTaskPreviousDate;
     /** Set while populating the detail panel, so programmatic field updates don't re-trigger a persist. */
     private boolean loadingDetail;
+    /**
+     * In Kanban mode, {@link #detailContent} is reparented into this popup
+     * instead of staying inline in {@link #detailPane} (a Kanban card is too
+     * narrow to show the full detail next to it). Created lazily, reused
+     * across selections, non-modal so the board stays clickable.
+     */
+    private Dialog<Void> kanbanDetailDialog;
 
     @FXML
     private void initialize() {
@@ -197,6 +207,10 @@ public class MainController {
             kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onDeleteTask));
             kanbanList.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
+            // Re-selecting an already-selected card doesn't re-fire the
+            // listener above, so clicking it again would otherwise fail to
+            // reopen a popup the user just closed.
+            kanbanList.setOnMouseClicked(e -> showTaskDetail(kanbanList.getSelectionModel().getSelectedItem()));
         }
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
@@ -655,10 +669,23 @@ public class MainController {
     /** Populates the editable right-hand panel with the given task's detail, or shows a placeholder when null. */
     private void showTaskDetail(Task task) {
         boolean hasSelection = task != null;
-        detailPlaceholder.setVisible(!hasSelection);
-        detailPlaceholder.setManaged(!hasSelection);
-        detailContent.setVisible(hasSelection);
-        detailContent.setManaged(hasSelection);
+        boolean kanban = viewMode == ViewMode.KANBAN;
+
+        if (!kanban) {
+            ensureDetailContentInPane();
+            detailPlaceholder.setText("Selectionnez une tache dans la liste pour afficher son detail.");
+            detailPlaceholder.setVisible(!hasSelection);
+            detailPlaceholder.setManaged(!hasSelection);
+            detailContent.setVisible(hasSelection);
+            detailContent.setManaged(hasSelection);
+        } else {
+            detailPlaceholder.setText("Le detail d'une tache selectionnee s'affiche dans une fenetre separee.");
+            detailPlaceholder.setVisible(true);
+            detailPlaceholder.setManaged(true);
+            if (!hasSelection && kanbanDetailDialog != null) {
+                kanbanDetailDialog.hide();
+            }
+        }
 
         selectedTask = task;
         if (!hasSelection) {
@@ -683,6 +710,43 @@ public class MainController {
                             .collect(Collectors.toList()));
         } finally {
             loadingDetail = false;
+        }
+
+        if (kanban) {
+            ensureDetailContentInDialog();
+            detailContent.setVisible(true);
+            detailContent.setManaged(true);
+            kanbanDetailDialog.setTitle(task.getTitle());
+            kanbanDetailDialog.show();
+        }
+    }
+
+    /** Moves {@link #detailContent} back into the inline panel and hides the Kanban popup, if any. */
+    private void ensureDetailContentInPane() {
+        if (detailContent.getParent() != detailPane) {
+            if (kanbanDetailDialog != null) {
+                kanbanDetailDialog.getDialogPane().setContent(null);
+                kanbanDetailDialog.hide();
+            }
+            detailPane.getChildren().add(detailContent);
+        }
+    }
+
+    /** Moves {@link #detailContent} into the (lazily created) Kanban detail popup. */
+    private void ensureDetailContentInDialog() {
+        if (kanbanDetailDialog == null) {
+            kanbanDetailDialog = new Dialog<>();
+            kanbanDetailDialog.initModality(Modality.NONE);
+            kanbanDetailDialog.setDialogPane(new DialogPane());
+            kanbanDetailDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            kanbanDetailDialog.getDialogPane().getStylesheets()
+                    .add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+            kanbanDetailDialog.getDialogPane().setPrefSize(420, 640);
+            kanbanDetailDialog.setResizable(true);
+        }
+        if (detailContent.getParent() != kanbanDetailDialog.getDialogPane()) {
+            detailPane.getChildren().remove(detailContent);
+            kanbanDetailDialog.getDialogPane().setContent(detailContent);
         }
     }
 
