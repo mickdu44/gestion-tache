@@ -10,6 +10,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -17,6 +18,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -31,10 +33,12 @@ import java.util.function.Consumer;
  * already says its status; deleting a task is still available from the
  * Jour/Semaine views. Selecting or clicking a card no longer opens its
  * detail popup by itself: only the edit button does, so dragging a card
- * doesn't accidentally pop it open. The whole card is still a drag source
- * (see {@link MainController}'s per-column drop targets), letting a card be
- * dragged into another column to change its status; there is no manual
- * ordering within a column.
+ * doesn't accidentally pop it open. Hovering the card shows a read-only
+ * preview of its detail in a tooltip (see {@link TaskPreview}), useful here
+ * since the card itself is too narrow to show much. The whole card is
+ * still a drag source (see {@link MainController}'s per-column drop
+ * targets), letting a card be dragged into another column to change its
+ * status; there is no manual ordering within a column.
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
@@ -44,6 +48,7 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final Label priorityBadge = new Label();
     private final Label recurrenceBadge = new Label();
     private final Label subtaskBadge = new Label();
+    private final Tooltip detailTooltip = new Tooltip();
     private final VBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
@@ -74,6 +79,11 @@ public class KanbanTaskCell extends ListCell<Task> {
         root.setPadding(new Insets(10, 12, 10, 12));
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
+
+        detailTooltip.setShowDelay(Duration.millis(400));
+        detailTooltip.setShowDuration(Duration.seconds(30));
+        detailTooltip.getStyleClass().add("task-preview-tooltip");
+        setTooltip(detailTooltip);
 
         doneCheckBox.setOnAction(e -> {
             Task task = getItem();
@@ -111,8 +121,11 @@ public class KanbanTaskCell extends ListCell<Task> {
         if (empty || task == null) {
             setGraphic(null);
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            setTooltip(null);
             return;
         }
+        setTooltip(detailTooltip);
+        detailTooltip.setGraphic(TaskPreview.build(task));
 
         doneCheckBox.setSelected(task.isCompleted());
         titleLabel.setText(task.getTitle());

@@ -66,6 +66,11 @@ ne quitte la machine : tout est stocke en local.
   les autres champs (priorite, recurrence, statut, date, sous-taches,
   pieces jointes) sont enregistres immediatement. Plus besoin de rouvrir
   une fenetre pour corriger une tache existante.
+- **Apercu au survol** : laisser le curseur sur une tache (liste Jour/
+  Semaine ou carte Kanban) affiche une bulle avec son detail en lecture
+  seule (titre, priorite, recurrence, statut, date, description,
+  sous-taches et pieces jointes), pour la consulter sans ouvrir son
+  edition via le bouton "Modifier".
 - **Texte enrichi, avec apercu Markdown** : la description accepte une mise
   en forme simple — `**gras**`, `*italique*`, des lignes commencant par
   `- ` pour une liste a puces, et `[texte](url)` pour un lien cliquable.
