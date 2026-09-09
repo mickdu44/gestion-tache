@@ -14,6 +14,7 @@ import javafx.scene.text.TextFlow;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -23,11 +24,24 @@ import java.util.Locale;
  * detail panel/popup, nothing here is interactive (plain labels, no
  * checkboxes or clickable links): a tooltip disappears on its own the
  * moment the mouse moves, so it isn't a place to act on a task.
+ * <p>
+ * The width is fixed rather than left to shrink-to-content: at a narrower
+ * width the four badges (priority/recurrence/status/date) wrap onto a
+ * second line, which is exactly the "not all fields fit" complaint this
+ * class exists to avoid. The description, subtask list and attachment list
+ * are each capped (character count or item count) rather than scrollable,
+ * since a tooltip is transient — it closes on the next mouse move, before
+ * a user could scroll it — so an overlong preview must be trimmed instead
+ * of letting it grow the popup past a readable height.
  */
 final class TaskPreview {
 
     private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("d MMM yyyy", Locale.FRENCH);
+    private static final double PREVIEW_WIDTH = 420;
+    private static final int MAX_DESCRIPTION_CHARS = 240;
+    private static final int MAX_SUBTASKS_SHOWN = 6;
+    private static final int MAX_ATTACHMENTS_SHOWN = 4;
 
     private TaskPreview() {
     }
@@ -35,7 +49,8 @@ final class TaskPreview {
     static Node build(Task task) {
         VBox root = new VBox(8);
         root.setPadding(new Insets(10));
-        root.setMaxWidth(300);
+        root.setPrefWidth(PREVIEW_WIDTH);
+        root.setMaxWidth(PREVIEW_WIDTH);
         root.getStyleClass().add("task-preview");
 
         Label title = new Label(task.getTitle());
@@ -67,17 +82,23 @@ final class TaskPreview {
 
         String description = task.getDescription();
         if (description != null && !description.isBlank()) {
+            String preview = description.length() > MAX_DESCRIPTION_CHARS
+                    ? description.substring(0, MAX_DESCRIPTION_CHARS) + "…"
+                    : description;
             TextFlow descriptionFlow = new TextFlow();
-            descriptionFlow.getChildren().addAll(DescriptionFormatter.toNodes(description));
+            descriptionFlow.getChildren().addAll(DescriptionFormatter.toNodes(preview));
             descriptionFlow.getStyleClass().add("task-preview-description");
             root.getChildren().add(descriptionFlow);
         }
 
-        if (!task.getSubtasks().isEmpty()) {
-            long done = task.getSubtasks().stream().filter(SubTask::isCompleted).count();
-            root.getChildren().add(sectionTitle("Sous-taches (" + done + "/" + task.getSubtasks().size() + ")"));
+        List<SubTask> subtasks = task.getSubtasks();
+        if (!subtasks.isEmpty()) {
+            long done = subtasks.stream().filter(SubTask::isCompleted).count();
+            root.getChildren().add(sectionTitle("Sous-taches (" + done + "/" + subtasks.size() + ")"));
             VBox subtaskList = new VBox(2);
-            for (SubTask subTask : task.getSubtasks()) {
+            int shown = Math.min(subtasks.size(), MAX_SUBTASKS_SHOWN);
+            for (int i = 0; i < shown; i++) {
+                SubTask subTask = subtasks.get(i);
                 Label item = new Label((subTask.isCompleted() ? "☑ " : "☐ ") + subTask.getTitle());
                 item.setWrapText(true);
                 item.getStyleClass().add("task-preview-subtask");
@@ -86,17 +107,25 @@ final class TaskPreview {
                 }
                 subtaskList.getChildren().add(item);
             }
+            if (subtasks.size() > shown) {
+                subtaskList.getChildren().add(moreLabel(subtasks.size() - shown));
+            }
             root.getChildren().add(subtaskList);
         }
 
-        if (!task.getAttachments().isEmpty()) {
+        List<String> attachments = task.getAttachments();
+        if (!attachments.isEmpty()) {
             root.getChildren().add(sectionTitle("Pieces jointes"));
             VBox attachmentList = new VBox(2);
-            for (String path : task.getAttachments()) {
-                Label item = new Label(new File(path).getName());
+            int shown = Math.min(attachments.size(), MAX_ATTACHMENTS_SHOWN);
+            for (int i = 0; i < shown; i++) {
+                Label item = new Label(new File(attachments.get(i)).getName());
                 item.setWrapText(true);
                 item.getStyleClass().add("task-preview-attachment");
                 attachmentList.getChildren().add(item);
+            }
+            if (attachments.size() > shown) {
+                attachmentList.getChildren().add(moreLabel(attachments.size() - shown));
             }
             root.getChildren().add(attachmentList);
         }
@@ -107,6 +136,12 @@ final class TaskPreview {
     private static Label sectionTitle(String text) {
         Label label = new Label(text);
         label.getStyleClass().add("detail-section-title");
+        return label;
+    }
+
+    private static Label moreLabel(int remaining) {
+        Label label = new Label("+ " + remaining + " autre(s)");
+        label.getStyleClass().add("task-preview-more");
         return label;
     }
 }

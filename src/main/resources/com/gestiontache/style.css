@@ -566,6 +566,12 @@
     -fx-text-fill: -win-text-secondary;
 }
 
+.task-preview-more {
+    -fx-font-size: 12px;
+    -fx-font-style: italic;
+    -fx-text-fill: -win-text-disabled;
+}
+
 .description-preview-scroll,
 .description-preview-scroll > .viewport {
     -fx-background-color: transparent;
