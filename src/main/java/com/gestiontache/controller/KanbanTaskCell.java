@@ -3,12 +3,15 @@ package com.gestiontache.controller;
 import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -16,15 +19,17 @@ import javafx.scene.layout.VBox;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
- * Compact card for a single Kanban column: a checkbox/title row with a small
- * delete button, and a wrapping row of badges below. Unlike {@link TaskListCell}
- * (a wide row meant for the full-width flat list), this fits a narrow column.
- * There is no drag handle, date badge, or status badge: Kanban has no manual
- * reordering, is always scoped to a single day, and the column a card sits in
- * already says its status.
+ * Compact card for a single Kanban column: a checkbox/title row, and a row
+ * of badges below it aligned to the right. Unlike {@link TaskListCell} (a
+ * wide row meant for the full-width flat list), this fits a narrow column.
+ * There is no drag handle, delete button, date badge, or status badge: it
+ * is always scoped to a single day and the column a card sits in already
+ * says its status; deleting a task is still available from the Jour/Semaine
+ * views. The whole card is a drag source (see {@link MainController}'s
+ * per-column drop targets), letting a card be dragged into another column
+ * to change its status; there is no manual ordering within a column.
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
@@ -33,15 +38,12 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final Label priorityBadge = new Label();
     private final Label recurrenceBadge = new Label();
     private final Label subtaskBadge = new Label();
-    private final Button deleteButton = new Button("✕");
     private final VBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
-    private final Consumer<Task> onDelete;
 
-    public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onDelete) {
+    public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle) {
         this.onToggle = onToggle;
-        this.onDelete = onDelete;
 
         titleLabel.getStyleClass().add("task-title");
         titleLabel.setWrapText(true);
@@ -51,15 +53,16 @@ public class KanbanTaskCell extends ListCell<Task> {
         priorityBadge.getStyleClass().add("priority-badge");
         recurrenceBadge.getStyleClass().add("recurrence-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
-        deleteButton.getStyleClass().add("icon-button");
 
-        HBox topRow = new HBox(6, doneCheckBox, titleLabel, deleteButton);
+        HBox topRow = new HBox(8, doneCheckBox, titleLabel);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         FlowPane badgeRow = new FlowPane(6, 4, priorityBadge, recurrenceBadge, subtaskBadge);
+        badgeRow.setAlignment(Pos.CENTER_RIGHT);
 
-        root = new VBox(6, topRow, badgeRow);
+        root = new VBox(8, topRow, badgeRow);
         root.getStyleClass().add("task-row");
+        root.setPadding(new Insets(10, 12, 10, 12));
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
 
@@ -69,12 +72,20 @@ public class KanbanTaskCell extends ListCell<Task> {
                 this.onToggle.accept(task, doneCheckBox.isSelected());
             }
         });
-        deleteButton.setOnAction(e -> {
+
+        root.setOnDragDetected(event -> {
             Task task = getItem();
-            if (task != null) {
-                this.onDelete.accept(task);
+            if (task == null) {
+                return;
             }
+            Dragboard dragboard = root.startDragAndDrop(TransferMode.MOVE);
+            dragboard.setDragView(root.snapshot(null, null));
+            ClipboardContent content = new ClipboardContent();
+            content.putString(task.getId());
+            dragboard.setContent(content);
+            event.consume();
         });
+        root.setOnDragDone(event -> event.consume());
     }
 
     @Override

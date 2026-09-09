@@ -12,6 +12,7 @@ import com.gestiontache.service.TaskService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -26,13 +27,17 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 
 import java.io.File;
 import java.io.IOException;
@@ -157,6 +162,8 @@ public class MainController {
      * across selections, non-modal so the board stays clickable.
      */
     private Dialog<Void> kanbanDetailDialog;
+    /** Holds {@link #detailContent} inside {@link #kanbanDetailDialog}, so a task with many subtasks/attachments/history entries scrolls instead of growing the popup past the screen. */
+    private ScrollPane kanbanDetailScrollPane;
 
     @FXML
     private void initialize() {
@@ -207,7 +214,7 @@ public class MainController {
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onDeleteTask));
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted));
             kanbanList.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
             // Re-selecting an already-selected card doesn't re-fire the
@@ -215,6 +222,9 @@ public class MainController {
             // reopen a popup the user just closed.
             kanbanList.setOnMouseClicked(e -> showTaskDetail(kanbanList.getSelectionModel().getSelectedItem()));
         }
+        setUpKanbanColumnDropTarget(kanbanTodoList, TaskStatus.A_FAIRE);
+        setUpKanbanColumnDropTarget(kanbanInProgressList, TaskStatus.EN_COURS);
+        setUpKanbanColumnDropTarget(kanbanDoneList, TaskStatus.TERMINEE);
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
@@ -476,6 +486,64 @@ public class MainController {
     }
 
     /**
+     * Makes a Kanban column accept a card dragged from any of the three
+     * columns (including its own, as a no-op) and move it to
+     * {@code targetStatus}. {@code KanbanTaskCell} is the drag source, and
+     * puts the dragged task's id on the dragboard rather than its index,
+     * since the source and target lists differ.
+     */
+    private void setUpKanbanColumnDropTarget(ListView<Task> listView, TaskStatus targetStatus) {
+        listView.setOnDragOver(event -> {
+            if (event.getGestureSource() != listView && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+            event.consume();
+        });
+        listView.setOnDragEntered(event -> {
+            if (event.getDragboard().hasString()) {
+                listView.getStyleClass().add("kanban-column-drag-over");
+            }
+        });
+        listView.setOnDragExited(event -> listView.getStyleClass().remove("kanban-column-drag-over"));
+        listView.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            boolean success = false;
+            if (dragboard.hasString()) {
+                Task dragged = findKanbanTaskById(dragboard.getString());
+                if (dragged != null) {
+                    moveKanbanTaskToStatus(dragged, targetStatus);
+                    success = true;
+                }
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
+    private Task findKanbanTaskById(String id) {
+        for (ListView<Task> list : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
+            for (Task task : list.getItems()) {
+                if (id.equals(task.getId())) {
+                    return task;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Persists the status change from a Kanban drag-and-drop move and logs it in the task's history, like any other status change. */
+    private void moveKanbanTaskToStatus(Task task, TaskStatus targetStatus) {
+        TaskStatus oldStatus = task.getStatus();
+        if (oldStatus == targetStatus) {
+            return;
+        }
+        task.setStatus(targetStatus);
+        task.addHistoryEntry("Statut change : " + oldStatus + " -> " + targetStatus);
+        taskService.updateTask(task, task.getDate());
+        refresh();
+    }
+
+    /**
      * Manual reordering only makes sense when browsing a single day with no
      * priority filter applied and no priority sort active (otherwise the
      * list view holds a subset or a recomputed order of the day's tasks,
@@ -732,28 +800,45 @@ public class MainController {
     private void ensureDetailContentInPane() {
         if (detailContent.getParent() != detailPane) {
             if (kanbanDetailDialog != null) {
-                kanbanDetailDialog.getDialogPane().setContent(null);
+                kanbanDetailScrollPane.setContent(null);
                 kanbanDetailDialog.hide();
             }
             detailPane.getChildren().add(detailContent);
         }
     }
 
-    /** Moves {@link #detailContent} into the (lazily created) Kanban detail popup. */
+    /**
+     * Moves {@link #detailContent} into the (lazily created) Kanban detail
+     * popup. The content sits inside a scroll pane and the dialog's size is
+     * clamped to the visible screen, so a task with many subtasks,
+     * attachments or history entries scrolls within the popup instead of
+     * growing it past the screen's edges.
+     */
     private void ensureDetailContentInDialog() {
         if (kanbanDetailDialog == null) {
+            kanbanDetailScrollPane = new ScrollPane();
+            kanbanDetailScrollPane.setFitToWidth(true);
+            kanbanDetailScrollPane.getStyleClass().add("kanban-detail-scroll");
+
             kanbanDetailDialog = new Dialog<>();
             kanbanDetailDialog.initModality(Modality.NONE);
             kanbanDetailDialog.setDialogPane(new DialogPane());
             kanbanDetailDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
             kanbanDetailDialog.getDialogPane().getStylesheets()
                     .add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
-            kanbanDetailDialog.getDialogPane().setPrefSize(420, 640);
+            kanbanDetailDialog.getDialogPane().setContent(kanbanDetailScrollPane);
             kanbanDetailDialog.setResizable(true);
+
+            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+            double maxWidth = Math.max(320, visualBounds.getWidth() - 80);
+            double maxHeight = Math.max(320, visualBounds.getHeight() - 80);
+            kanbanDetailDialog.getDialogPane().setMaxWidth(maxWidth);
+            kanbanDetailDialog.getDialogPane().setMaxHeight(maxHeight);
+            kanbanDetailDialog.getDialogPane().setPrefSize(Math.min(420, maxWidth), Math.min(640, maxHeight));
         }
-        if (detailContent.getParent() != kanbanDetailDialog.getDialogPane()) {
+        if (detailContent.getParent() != kanbanDetailScrollPane) {
             detailPane.getChildren().remove(detailContent);
-            kanbanDetailDialog.getDialogPane().setContent(detailContent);
+            kanbanDetailScrollPane.setContent(detailContent);
         }
     }
 
