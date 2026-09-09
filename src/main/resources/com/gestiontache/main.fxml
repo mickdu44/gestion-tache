@@ -18,6 +18,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -40,6 +41,7 @@
                     </toggleGroup>
                 </ToggleButton>
                 <ToggleButton fx:id="weekViewButton" text="Semaine" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
+                <ToggleButton fx:id="kanbanViewButton" text="Kanban" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
             </HBox>
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <ComboBox fx:id="priorityFilterCombo"/>
@@ -53,7 +55,26 @@
     </top>
     <center>
         <SplitPane fx:id="mainSplitPane" dividerPositions="0.5" BorderPane.alignment="CENTER">
-            <ListView fx:id="taskListView" minWidth="320" styleClass="task-list"/>
+            <StackPane fx:id="taskListContainer" minWidth="320">
+                <ListView fx:id="taskListView" styleClass="task-list"/>
+                <HBox fx:id="kanbanBoard" spacing="10" visible="false" managed="false">
+                    <padding>
+                        <Insets top="8" right="8" bottom="8" left="8"/>
+                    </padding>
+                    <VBox styleClass="kanban-column" minWidth="0" HBox.hgrow="ALWAYS">
+                        <Label fx:id="kanbanTodoHeader" styleClass="kanban-column-title"/>
+                        <ListView fx:id="kanbanTodoList" styleClass="task-list" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                    <VBox styleClass="kanban-column" minWidth="0" HBox.hgrow="ALWAYS">
+                        <Label fx:id="kanbanInProgressHeader" styleClass="kanban-column-title"/>
+                        <ListView fx:id="kanbanInProgressList" styleClass="task-list" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                    <VBox styleClass="kanban-column" minWidth="0" HBox.hgrow="ALWAYS">
+                        <Label fx:id="kanbanDoneHeader" styleClass="kanban-column-title"/>
+                        <ListView fx:id="kanbanDoneList" styleClass="task-list" VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                </HBox>
+            </StackPane>
             <VBox fx:id="detailPane" minWidth="260" styleClass="detail-pane">
                 <padding>
                     <Insets top="18" right="18" bottom="18" left="18"/>

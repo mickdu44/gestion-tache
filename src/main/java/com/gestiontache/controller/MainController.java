@@ -26,10 +26,13 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +65,7 @@ public class MainController {
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.FRENCH);
     private static final String ALL_PRIORITIES = "Toutes priorites";
 
-    private enum ViewMode { JOUR, SEMAINE }
+    private enum ViewMode { JOUR, SEMAINE, KANBAN }
 
     @FXML
     private ComboBox<String> priorityFilterCombo;
@@ -76,6 +79,8 @@ public class MainController {
     private TextField searchField;
     @FXML
     private ListView<Task> taskListView;
+    @FXML
+    private SplitPane mainSplitPane;
     @FXML
     private Button prevDayButton;
     @FXML
@@ -91,11 +96,15 @@ public class MainController {
     @FXML
     private ToggleButton weekViewButton;
     @FXML
+    private ToggleButton kanbanViewButton;
+    @FXML
     private ToggleGroup viewModeGroup;
     @FXML
     private CheckBox sortByPriorityCheckBox;
     @FXML
     private Label detailPlaceholder;
+    @FXML
+    private VBox detailPane;
     @FXML
     private VBox detailContent;
     @FXML
@@ -116,6 +125,20 @@ public class MainController {
     private AttachmentEditorControl detailAttachmentEditor;
     @FXML
     private ListView<String> detailHistoryList;
+    @FXML
+    private HBox kanbanBoard;
+    @FXML
+    private Label kanbanTodoHeader;
+    @FXML
+    private ListView<Task> kanbanTodoList;
+    @FXML
+    private Label kanbanInProgressHeader;
+    @FXML
+    private ListView<Task> kanbanInProgressList;
+    @FXML
+    private Label kanbanDoneHeader;
+    @FXML
+    private ListView<Task> kanbanDoneList;
 
     private TaskService taskService;
     private LocalDate currentDate;
@@ -127,6 +150,13 @@ public class MainController {
     private LocalDate selectedTaskPreviousDate;
     /** Set while populating the detail panel, so programmatic field updates don't re-trigger a persist. */
     private boolean loadingDetail;
+    /**
+     * In Kanban mode, {@link #detailContent} is reparented into this popup
+     * instead of staying inline in {@link #detailPane} (a Kanban card is too
+     * narrow to show the full detail next to it). Created lazily, reused
+     * across selections, non-modal so the board stays clickable.
+     */
+    private Dialog<Void> kanbanDetailDialog;
 
     @FXML
     private void initialize() {
@@ -154,7 +184,13 @@ public class MainController {
                 viewModeGroup.selectToggle(oldToggle);
                 return;
             }
-            viewMode = newToggle == weekViewButton ? ViewMode.SEMAINE : ViewMode.JOUR;
+            if (newToggle == weekViewButton) {
+                viewMode = ViewMode.SEMAINE;
+            } else if (newToggle == kanbanViewButton) {
+                viewMode = ViewMode.KANBAN;
+            } else {
+                viewMode = ViewMode.JOUR;
+            }
             searchField.clear();
             refresh();
         });
@@ -167,6 +203,18 @@ public class MainController {
 
         taskListView.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
+
+        // Kanban columns use a compact card (KanbanTaskCell) instead of
+        // TaskListCell's wide row, which doesn't fit a narrow column.
+        for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onDeleteTask));
+            kanbanList.getSelectionModel().selectedItemProperty()
+                    .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
+            // Re-selecting an already-selected card doesn't re-fire the
+            // listener above, so clicking it again would otherwise fail to
+            // reopen a popup the user just closed.
+            kanbanList.setOnMouseClicked(e -> showTaskDetail(kanbanList.getSelectionModel().getSelectedItem()));
+        }
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> refresh());
 
@@ -484,6 +532,7 @@ public class MainController {
     private void refresh() {
         boolean searching = isSearching();
         boolean weekView = viewMode == ViewMode.SEMAINE;
+        boolean kanbanView = viewMode == ViewMode.KANBAN;
         prevDayButton.setDisable(searching);
         nextDayButton.setDisable(searching);
         todayButton.setDisable(searching);
@@ -491,6 +540,7 @@ public class MainController {
         datePickerNav.setDisable(searching);
         dayViewButton.setDisable(searching);
         weekViewButton.setDisable(searching);
+        kanbanViewButton.setDisable(searching);
         if (!searching) {
             datePickerNav.setValue(currentDate);
         }
@@ -556,30 +606,93 @@ public class MainController {
             countLabel.setText(done + " / " + tasks.size() + " tache(s) terminee(s)");
         }
 
-        Task previouslySelected = taskListView.getSelectionModel().getSelectedItem();
-        String previouslySelectedId = previouslySelected != null ? previouslySelected.getId() : null;
+        String previouslySelectedId = selectedTask != null ? selectedTask.getId() : null;
 
-        taskListView.getItems().setAll(tasks);
+        taskListView.setVisible(!kanbanView);
+        taskListView.setManaged(!kanbanView);
+        kanbanBoard.setVisible(kanbanView);
+        kanbanBoard.setManaged(kanbanView);
 
-        if (previouslySelectedId != null) {
-            tasks.stream()
-                    .filter(t -> previouslySelectedId.equals(t.getId()))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            t -> taskListView.getSelectionModel().select(t),
-                            () -> showTaskDetail(null));
+        // The detail panel shows nothing useful in Kanban mode (the popup
+        // takes over), so it's removed from the SplitPane entirely rather
+        // than just hidden, letting the board use the full window width.
+        boolean detailPaneShown = mainSplitPane.getItems().contains(detailPane);
+        if (kanbanView && detailPaneShown) {
+            mainSplitPane.getItems().remove(detailPane);
+        } else if (!kanbanView && !detailPaneShown) {
+            mainSplitPane.getItems().add(detailPane);
+        }
+
+        if (kanbanView) {
+            showKanbanBoard(tasks, previouslySelectedId);
         } else {
+            taskListView.getItems().setAll(tasks);
+            if (previouslySelectedId != null) {
+                tasks.stream()
+                        .filter(t -> previouslySelectedId.equals(t.getId()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                t -> taskListView.getSelectionModel().select(t),
+                                () -> showTaskDetail(null));
+            } else {
+                showTaskDetail(null);
+            }
+        }
+    }
+
+    /**
+     * Splits {@code tasks} (the current day's tasks, already filtered/sorted
+     * like the flat list) into the three status columns. All three lists are
+     * repopulated before re-selecting, so only the one re-selection (if any)
+     * has the final say on what the detail panel shows.
+     */
+    private void showKanbanBoard(List<Task> tasks, String previouslySelectedId) {
+        List<Task> todo = tasks.stream().filter(t -> t.getStatus() == TaskStatus.A_FAIRE).collect(Collectors.toList());
+        List<Task> inProgress = tasks.stream().filter(t -> t.getStatus() == TaskStatus.EN_COURS).collect(Collectors.toList());
+        List<Task> done = tasks.stream().filter(t -> t.getStatus() == TaskStatus.TERMINEE).collect(Collectors.toList());
+
+        kanbanTodoHeader.setText("A faire (" + todo.size() + ")");
+        kanbanInProgressHeader.setText("En cours (" + inProgress.size() + ")");
+        kanbanDoneHeader.setText("Terminee (" + done.size() + ")");
+
+        kanbanTodoList.getItems().setAll(todo);
+        kanbanInProgressList.getItems().setAll(inProgress);
+        kanbanDoneList.getItems().setAll(done);
+
+        boolean reselected = previouslySelectedId != null
+                && (selectIfPresent(kanbanTodoList, todo, previouslySelectedId)
+                        || selectIfPresent(kanbanInProgressList, inProgress, previouslySelectedId)
+                        || selectIfPresent(kanbanDoneList, done, previouslySelectedId));
+        if (!reselected) {
             showTaskDetail(null);
         }
+    }
+
+    private static boolean selectIfPresent(ListView<Task> listView, List<Task> tasksForColumn, String id) {
+        return tasksForColumn.stream()
+                .filter(t -> id.equals(t.getId()))
+                .findFirst()
+                .map(t -> {
+                    listView.getSelectionModel().select(t);
+                    return true;
+                })
+                .orElse(false);
     }
 
     /** Populates the editable right-hand panel with the given task's detail, or shows a placeholder when null. */
     private void showTaskDetail(Task task) {
         boolean hasSelection = task != null;
-        detailPlaceholder.setVisible(!hasSelection);
-        detailPlaceholder.setManaged(!hasSelection);
-        detailContent.setVisible(hasSelection);
-        detailContent.setManaged(hasSelection);
+        boolean kanban = viewMode == ViewMode.KANBAN;
+
+        if (!kanban) {
+            ensureDetailContentInPane();
+            detailPlaceholder.setVisible(!hasSelection);
+            detailPlaceholder.setManaged(!hasSelection);
+            detailContent.setVisible(hasSelection);
+            detailContent.setManaged(hasSelection);
+        } else if (!hasSelection && kanbanDetailDialog != null) {
+            kanbanDetailDialog.hide();
+        }
 
         selectedTask = task;
         if (!hasSelection) {
@@ -604,6 +717,43 @@ public class MainController {
                             .collect(Collectors.toList()));
         } finally {
             loadingDetail = false;
+        }
+
+        if (kanban) {
+            ensureDetailContentInDialog();
+            detailContent.setVisible(true);
+            detailContent.setManaged(true);
+            kanbanDetailDialog.setTitle(task.getTitle());
+            kanbanDetailDialog.show();
+        }
+    }
+
+    /** Moves {@link #detailContent} back into the inline panel and hides the Kanban popup, if any. */
+    private void ensureDetailContentInPane() {
+        if (detailContent.getParent() != detailPane) {
+            if (kanbanDetailDialog != null) {
+                kanbanDetailDialog.getDialogPane().setContent(null);
+                kanbanDetailDialog.hide();
+            }
+            detailPane.getChildren().add(detailContent);
+        }
+    }
+
+    /** Moves {@link #detailContent} into the (lazily created) Kanban detail popup. */
+    private void ensureDetailContentInDialog() {
+        if (kanbanDetailDialog == null) {
+            kanbanDetailDialog = new Dialog<>();
+            kanbanDetailDialog.initModality(Modality.NONE);
+            kanbanDetailDialog.setDialogPane(new DialogPane());
+            kanbanDetailDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            kanbanDetailDialog.getDialogPane().getStylesheets()
+                    .add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+            kanbanDetailDialog.getDialogPane().setPrefSize(420, 640);
+            kanbanDetailDialog.setResizable(true);
+        }
+        if (detailContent.getParent() != kanbanDetailDialog.getDialogPane()) {
+            detailPane.getChildren().remove(detailContent);
+            kanbanDetailDialog.getDialogPane().setContent(detailContent);
         }
     }
 
