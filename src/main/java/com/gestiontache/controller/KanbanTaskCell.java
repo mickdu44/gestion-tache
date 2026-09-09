@@ -9,6 +9,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -22,9 +25,11 @@ import java.util.function.Consumer;
  * Compact card for a single Kanban column: a checkbox/title row with a small
  * delete button, and a wrapping row of badges below. Unlike {@link TaskListCell}
  * (a wide row meant for the full-width flat list), this fits a narrow column.
- * There is no drag handle, date badge, or status badge: Kanban has no manual
- * reordering, is always scoped to a single day, and the column a card sits in
- * already says its status.
+ * There is no drag handle, date badge, or status badge: it is always scoped
+ * to a single day and the column a card sits in already says its status.
+ * The whole card is a drag source (see {@link MainController}'s
+ * per-column drop targets), letting a card be dragged into another column
+ * to change its status; there is no manual ordering within a column.
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
@@ -75,6 +80,20 @@ public class KanbanTaskCell extends ListCell<Task> {
                 this.onDelete.accept(task);
             }
         });
+
+        root.setOnDragDetected(event -> {
+            Task task = getItem();
+            if (task == null) {
+                return;
+            }
+            Dragboard dragboard = root.startDragAndDrop(TransferMode.MOVE);
+            dragboard.setDragView(root.snapshot(null, null));
+            ClipboardContent content = new ClipboardContent();
+            content.putString(task.getId());
+            dragboard.setContent(content);
+            event.consume();
+        });
+        root.setOnDragDone(event -> event.consume());
     }
 
     @Override

@@ -518,6 +518,20 @@
     -fx-text-fill: -win-text;
 }
 
+.kanban-column-drag-over {
+    -fx-background-color: derive(-win-accent, 90%);
+    -fx-background-radius: 6;
+    -fx-border-color: -win-accent;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+    -fx-border-style: dashed;
+}
+
+.kanban-detail-scroll,
+.kanban-detail-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
 .description-preview-scroll,
 .description-preview-scroll > .viewport {
     -fx-background-color: transparent;
