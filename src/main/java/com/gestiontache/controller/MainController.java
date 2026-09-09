@@ -26,6 +26,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -78,6 +79,8 @@ public class MainController {
     private TextField searchField;
     @FXML
     private ListView<Task> taskListView;
+    @FXML
+    private SplitPane mainSplitPane;
     @FXML
     private Button prevDayButton;
     @FXML
@@ -610,6 +613,16 @@ public class MainController {
         kanbanBoard.setVisible(kanbanView);
         kanbanBoard.setManaged(kanbanView);
 
+        // The detail panel shows nothing useful in Kanban mode (the popup
+        // takes over), so it's removed from the SplitPane entirely rather
+        // than just hidden, letting the board use the full window width.
+        boolean detailPaneShown = mainSplitPane.getItems().contains(detailPane);
+        if (kanbanView && detailPaneShown) {
+            mainSplitPane.getItems().remove(detailPane);
+        } else if (!kanbanView && !detailPaneShown) {
+            mainSplitPane.getItems().add(detailPane);
+        }
+
         if (kanbanView) {
             showKanbanBoard(tasks, previouslySelectedId);
         } else {
@@ -673,18 +686,12 @@ public class MainController {
 
         if (!kanban) {
             ensureDetailContentInPane();
-            detailPlaceholder.setText("Selectionnez une tache dans la liste pour afficher son detail.");
             detailPlaceholder.setVisible(!hasSelection);
             detailPlaceholder.setManaged(!hasSelection);
             detailContent.setVisible(hasSelection);
             detailContent.setManaged(hasSelection);
-        } else {
-            detailPlaceholder.setText("Le detail d'une tache selectionnee s'affiche dans une fenetre separee.");
-            detailPlaceholder.setVisible(true);
-            detailPlaceholder.setManaged(true);
-            if (!hasSelection && kanbanDetailDialog != null) {
-                kanbanDetailDialog.hide();
-            }
+        } else if (!hasSelection && kanbanDetailDialog != null) {
+            kanbanDetailDialog.hide();
         }
 
         selectedTask = task;
