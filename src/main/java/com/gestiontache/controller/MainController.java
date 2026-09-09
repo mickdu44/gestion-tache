@@ -55,6 +55,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MainController {
 
@@ -205,22 +206,13 @@ public class MainController {
         sortByPriorityCheckBox.selectedProperty().addListener((obs, oldValue, newValue) -> refresh());
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onDeleteTask,
+                this::onToggleCompleted, this::onDeleteTask, this::onEditTask,
                 isSearching(), isReorderEnabled(), this::onTasksReordered));
-
-        taskListView.getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
 
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted));
-            kanbanList.getSelectionModel().selectedItemProperty()
-                    .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
-            // Re-selecting an already-selected card doesn't re-fire the
-            // listener above, so clicking it again would otherwise fail to
-            // reopen a popup the user just closed.
-            kanbanList.setOnMouseClicked(e -> showTaskDetail(kanbanList.getSelectionModel().getSelectedItem()));
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onEditTask));
         }
         setUpKanbanColumnDropTarget(kanbanTodoList, TaskStatus.A_FAIRE);
         setUpKanbanColumnDropTarget(kanbanInProgressList, TaskStatus.EN_COURS);
@@ -614,7 +606,7 @@ public class MainController {
         }
 
         taskListView.setCellFactory(list -> new TaskListCell(
-                this::onToggleCompleted, this::onDeleteTask,
+                this::onToggleCompleted, this::onDeleteTask, this::onEditTask,
                 showDateBadge(), isReorderEnabled(), this::onTasksReordered));
 
         LocalDate weekStart = currentDate.with(DayOfWeek.MONDAY);
@@ -699,9 +691,10 @@ public class MainController {
                 tasks.stream()
                         .filter(t -> previouslySelectedId.equals(t.getId()))
                         .findFirst()
-                        .ifPresentOrElse(
-                                t -> taskListView.getSelectionModel().select(t),
-                                () -> showTaskDetail(null));
+                        .ifPresentOrElse(t -> {
+                            taskListView.getSelectionModel().select(t);
+                            showTaskDetail(t);
+                        }, () -> showTaskDetail(null));
             } else {
                 showTaskDetail(null);
             }
@@ -709,10 +702,21 @@ public class MainController {
     }
 
     /**
+     * Opens (or refreshes) the detail panel/popup for {@code task}. This is
+     * the only way editing opens now: clicking a row or card only selects
+     * it, it no longer shows the detail on its own (see the "Modifier"
+     * button in {@link TaskListCell} and {@link KanbanTaskCell}).
+     */
+    private void onEditTask(Task task) {
+        showTaskDetail(task);
+    }
+
+    /**
      * Splits {@code tasks} (the current day's tasks, already filtered/sorted
-     * like the flat list) into the three status columns. All three lists are
-     * repopulated before re-selecting, so only the one re-selection (if any)
-     * has the final say on what the detail panel shows.
+     * like the flat list) into the three status columns. If a task's popup
+     * was already open (e.g. it was just dragged to another column), it is
+     * kept open and refreshed with the task's current data; otherwise a
+     * click or drag alone never opens it (see {@link #onEditTask}).
      */
     private void showKanbanBoard(List<Task> tasks, String previouslySelectedId) {
         List<Task> todo = tasks.stream().filter(t -> t.getStatus() == TaskStatus.A_FAIRE).collect(Collectors.toList());
@@ -727,24 +731,26 @@ public class MainController {
         kanbanInProgressList.getItems().setAll(inProgress);
         kanbanDoneList.getItems().setAll(done);
 
-        boolean reselected = previouslySelectedId != null
-                && (selectIfPresent(kanbanTodoList, todo, previouslySelectedId)
-                        || selectIfPresent(kanbanInProgressList, inProgress, previouslySelectedId)
-                        || selectIfPresent(kanbanDoneList, done, previouslySelectedId));
-        if (!reselected) {
+        Task previouslySelected = previouslySelectedId == null ? null
+                : Stream.of(todo, inProgress, done)
+                        .flatMap(List::stream)
+                        .filter(t -> previouslySelectedId.equals(t.getId()))
+                        .findFirst()
+                        .orElse(null);
+        if (previouslySelected != null) {
+            selectIfPresent(kanbanTodoList, todo, previouslySelected);
+            selectIfPresent(kanbanInProgressList, inProgress, previouslySelected);
+            selectIfPresent(kanbanDoneList, done, previouslySelected);
+            showTaskDetail(previouslySelected);
+        } else {
             showTaskDetail(null);
         }
     }
 
-    private static boolean selectIfPresent(ListView<Task> listView, List<Task> tasksForColumn, String id) {
-        return tasksForColumn.stream()
-                .filter(t -> id.equals(t.getId()))
-                .findFirst()
-                .map(t -> {
-                    listView.getSelectionModel().select(t);
-                    return true;
-                })
-                .orElse(false);
+    private static void selectIfPresent(ListView<Task> listView, List<Task> tasksForColumn, Task task) {
+        if (tasksForColumn.contains(task)) {
+            listView.getSelectionModel().select(task);
+        }
     }
 
     /** Populates the editable right-hand panel with the given task's detail, or shows a placeholder when null. */
