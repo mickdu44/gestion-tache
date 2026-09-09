@@ -714,9 +714,13 @@ public class MainController {
     /**
      * Splits {@code tasks} (the current day's tasks, already filtered/sorted
      * like the flat list) into the three status columns. If a task's popup
-     * was already open (e.g. it was just dragged to another column), it is
-     * kept open and refreshed with the task's current data; otherwise a
-     * click or drag alone never opens it (see {@link #onEditTask}).
+     * is currently open (e.g. it was just dragged to another column, or one
+     * of its fields was just edited), it is kept open and refreshed with
+     * the task's current data. Otherwise the task is only reselected for
+     * visual highlight: refreshing the board for an unrelated reason (an
+     * unrelated checkbox toggle, another task added or deleted, a filter
+     * change, ...) must never pop a closed popup back open (see
+     * {@link #onEditTask}).
      */
     private void showKanbanBoard(List<Task> tasks, String previouslySelectedId) {
         List<Task> todo = tasks.stream().filter(t -> t.getStatus() == TaskStatus.A_FAIRE).collect(Collectors.toList());
@@ -741,8 +745,13 @@ public class MainController {
             selectIfPresent(kanbanTodoList, todo, previouslySelected);
             selectIfPresent(kanbanInProgressList, inProgress, previouslySelected);
             selectIfPresent(kanbanDoneList, done, previouslySelected);
-            showTaskDetail(previouslySelected);
-        } else {
+            if (kanbanDetailDialog != null && kanbanDetailDialog.isShowing()) {
+                showTaskDetail(previouslySelected);
+            }
+        } else if (kanbanDetailDialog != null && kanbanDetailDialog.isShowing()) {
+            // The task whose popup was open just vanished from the board
+            // (deleted, or filtered/searched out): close it instead of
+            // leaving it showing stale data for a task that's gone.
             showTaskDetail(null);
         }
     }
