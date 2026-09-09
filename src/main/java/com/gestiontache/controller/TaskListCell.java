@@ -28,10 +28,12 @@ import java.util.function.Consumer;
 /**
  * Renders a single task: a checkbox to mark it done, its title/description,
  * a priority badge, the date it belongs to (shown only while browsing
- * search results) and a delete action. Editing happens inline in the
- * detail panel when the row is selected. When browsing a single day
- * without any priority filter active, rows can be dragged to reorder the
- * tasks manually.
+ * search results), and "Modifier"/"Supprimer" actions. Selecting or
+ * clicking a row no longer opens the detail panel by itself: only the
+ * "Modifier" button does, so browsing/reordering the list doesn't
+ * accidentally pop the editor open. When browsing a single day without
+ * any priority filter active, rows can be dragged to reorder the tasks
+ * manually.
  */
 public class TaskListCell extends ListCell<Task> {
 
@@ -47,20 +49,23 @@ public class TaskListCell extends ListCell<Task> {
     private final Label statusBadge = new Label();
     private final Label subtaskBadge = new Label();
     private final Label dateBadge = new Label();
+    private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
     private final HBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
     private final Consumer<Task> onDelete;
+    private final Consumer<Task> onEdit;
     private final boolean showDateBadge;
     private final boolean reorderEnabled;
     private final Runnable onReorder;
 
     public TaskListCell(BiConsumer<Task, Boolean> onToggle,
-                         Consumer<Task> onDelete, boolean showDateBadge, boolean reorderEnabled,
-                         Runnable onReorder) {
+                         Consumer<Task> onDelete, Consumer<Task> onEdit, boolean showDateBadge,
+                         boolean reorderEnabled, Runnable onReorder) {
         this.onToggle = onToggle;
         this.onDelete = onDelete;
+        this.onEdit = onEdit;
         this.showDateBadge = showDateBadge;
         this.reorderEnabled = reorderEnabled;
         this.onReorder = onReorder;
@@ -74,6 +79,7 @@ public class TaskListCell extends ListCell<Task> {
         statusBadge.getStyleClass().add("status-in-progress-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
         dateBadge.getStyleClass().add("task-date-badge");
+        editButton.getStyleClass().add("icon-button");
         deleteButton.getStyleClass().add("icon-button");
 
         titleLabel.setMinWidth(0);
@@ -88,7 +94,7 @@ public class TaskListCell extends ListCell<Task> {
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
         root = new HBox(10, dragHandle, doneCheckBox, textBox, priorityBadge, recurrenceBadge, statusBadge,
-                subtaskBadge, dateBadge, deleteButton);
+                subtaskBadge, dateBadge, editButton, deleteButton);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(8, 10, 8, 10));
         root.getStyleClass().add("task-row");
@@ -102,6 +108,13 @@ public class TaskListCell extends ListCell<Task> {
             Task task = getItem();
             if (task != null) {
                 this.onToggle.accept(task, doneCheckBox.isSelected());
+            }
+        });
+        editButton.setOnAction(e -> {
+            Task task = getItem();
+            if (task != null) {
+                getListView().getSelectionModel().select(task);
+                this.onEdit.accept(task);
             }
         });
         deleteButton.setOnAction(e -> {

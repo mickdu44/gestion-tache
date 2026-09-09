@@ -20,27 +20,29 @@ ne quitte la machine : tout est stocke en local.
   taches du jour selectionne en trois colonnes (A faire / En cours /
   Terminee) au lieu d'une liste unique, chaque colonne affichant son nombre
   de taches. Le panneau de detail lateral est alors entierement retire de
-  la fenetre (les colonnes occupent toute la largeur disponible) et
-  cliquer une carte ouvre son detail dans une fenetre separee, dont la
-  taille est limitee a l'ecran visible (le contenu defile a l'interieur
-  de la fenetre plutot que de la faire deborder de l'ecran). Les cartes se
-  glissent-deposent d'une colonne a l'autre pour changer leur statut, y
-  compris pour reclasser une carte dans "A faire" ; le changement est
-  aussitot enregistre et journalise dans l'historique, comme un changement
-  de statut depuis le formulaire de detail. La navigation par jour, le
-  filtre de priorite et le tri par priorite restent actifs dans cette vue.
-  Les cartes n'ont pas de bouton de suppression (contrairement aux vues
-  Jour/Semaine) : elles sont volontairement epurees, avec les badges
-  alignes a droite pour rester lisibles ; supprimer une tache reste
-  possible depuis la vue Jour ou Semaine.
+  la fenetre (les colonnes occupent toute la largeur disponible) et le
+  bouton crayon (✎) d'une carte ouvre son detail dans une fenetre separee,
+  dont la taille est limitee a l'ecran visible (le contenu defile a
+  l'interieur de la fenetre plutot que de la faire deborder de l'ecran).
+  Les cartes se glissent-deposent d'une colonne a l'autre pour changer
+  leur statut, y compris pour reclasser une carte dans "A faire" ; le
+  changement est aussitot enregistre et journalise dans l'historique,
+  comme un changement de statut depuis le formulaire de detail. La
+  navigation par jour, le filtre de priorite et le tri par priorite
+  restent actifs dans cette vue. Les cartes n'ont pas de bouton de
+  suppression (contrairement aux vues Jour/Semaine) : elles sont
+  volontairement epurees, avec les badges alignes a droite pour rester
+  lisibles ; supprimer une tache reste possible depuis la vue Jour ou
+  Semaine.
 - **Calendrier de selection** : un champ de date dans la barre du haut
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
   le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
   precedent/suivant.
 - **Ajout / modification / suppression** de taches. L'ajout se fait via un
   formulaire dedie ; la modification se fait directement dans le panneau
-  de detail (voir ci-dessous), avec case a cocher pour marquer une tache
-  comme terminee.
+  de detail (voir ci-dessous), ouvert via le bouton "Modifier" de la
+  tache (case a cocher directe pour marquer une tache comme terminee,
+  sans avoir a ouvrir son detail).
 - **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
   affiche sous forme de badge colore dans la liste et le detail, et
   filtrable via le menu deroulant de la barre du haut. Une case "Trier
@@ -53,11 +55,14 @@ ne quitte la machine : tout est stocke en local.
 - **Les taches terminees passent en fin de liste** : quel que soit
   l'affichage (jour, semaine, recherche, tri par priorite), les taches
   terminees sont toujours regroupees a la fin de la liste.
-- **Detail de tache editable** : cliquer sur une tache affiche son detail
-  complet (titre, priorite, recurrence, statut, date, description,
-  sous-taches, pieces jointes) dans un panneau lateral qui occupe la
-  moitie de la fenetre, et chaque champ y est directement modifiable.
-  Le titre et la description sont enregistres quand on quitte le champ ;
+- **Detail de tache editable** : le bouton "Modifier" d'une tache (le
+  crayon ✎ en vue Kanban) affiche son detail complet (titre, priorite,
+  recurrence, statut, date, description, sous-taches, pieces jointes)
+  dans un panneau lateral qui occupe la moitie de la fenetre, et chaque
+  champ y est directement modifiable. Selectionner ou cliquer une tache
+  sans passer par ce bouton n'ouvre plus son detail, pour eviter de
+  l'ouvrir par accident en parcourant ou en reordonnant la liste. Le
+  titre et la description sont enregistres quand on quitte le champ ;
   les autres champs (priorite, recurrence, statut, date, sous-taches,
   pieces jointes) sont enregistres immediatement. Plus besoin de rouvrir
   une fenetre pour corriger une tache existante.

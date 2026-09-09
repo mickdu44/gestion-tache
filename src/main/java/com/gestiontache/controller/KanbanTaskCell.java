@@ -5,6 +5,7 @@ import com.gestiontache.model.SubTask;
 import com.gestiontache.model.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
@@ -19,42 +20,50 @@ import javafx.scene.layout.VBox;
 
 import java.util.Locale;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
- * Compact card for a single Kanban column: a checkbox/title row, and a row
- * of badges below it aligned to the right. Unlike {@link TaskListCell} (a
- * wide row meant for the full-width flat list), this fits a narrow column.
- * There is no drag handle, delete button, date badge, or status badge: it
- * is always scoped to a single day and the column a card sits in already
- * says its status; deleting a task is still available from the Jour/Semaine
- * views. The whole card is a drag source (see {@link MainController}'s
- * per-column drop targets), letting a card be dragged into another column
- * to change its status; there is no manual ordering within a column.
+ * Compact card for a single Kanban column: a checkbox/title/edit row, and a
+ * row of badges below it aligned to the right. Unlike {@link TaskListCell}
+ * (a wide row meant for the full-width flat list), this fits a narrow
+ * column. There is no drag handle, delete button, date badge, or status
+ * badge: it is always scoped to a single day and the column a card sits in
+ * already says its status; deleting a task is still available from the
+ * Jour/Semaine views. Selecting or clicking a card no longer opens its
+ * detail popup by itself: only the edit button does, so dragging a card
+ * doesn't accidentally pop it open. The whole card is still a drag source
+ * (see {@link MainController}'s per-column drop targets), letting a card be
+ * dragged into another column to change its status; there is no manual
+ * ordering within a column.
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
     private final CheckBox doneCheckBox = new CheckBox();
     private final Label titleLabel = new Label();
+    private final Button editButton = new Button("✎");
     private final Label priorityBadge = new Label();
     private final Label recurrenceBadge = new Label();
     private final Label subtaskBadge = new Label();
     private final VBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
+    private final Consumer<Task> onEdit;
 
-    public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle) {
+    public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit) {
         this.onToggle = onToggle;
+        this.onEdit = onEdit;
 
         titleLabel.getStyleClass().add("task-title");
         titleLabel.setWrapText(true);
         titleLabel.setMinWidth(0);
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
 
+        editButton.getStyleClass().add("icon-button");
         priorityBadge.getStyleClass().add("priority-badge");
         recurrenceBadge.getStyleClass().add("recurrence-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
 
-        HBox topRow = new HBox(8, doneCheckBox, titleLabel);
+        HBox topRow = new HBox(8, doneCheckBox, titleLabel, editButton);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         FlowPane badgeRow = new FlowPane(6, 4, priorityBadge, recurrenceBadge, subtaskBadge);
@@ -70,6 +79,13 @@ public class KanbanTaskCell extends ListCell<Task> {
             Task task = getItem();
             if (task != null) {
                 this.onToggle.accept(task, doneCheckBox.isSelected());
+            }
+        });
+        editButton.setOnAction(e -> {
+            Task task = getItem();
+            if (task != null) {
+                getListView().getSelectionModel().select(task);
+                this.onEdit.accept(task);
             }
         });
 
