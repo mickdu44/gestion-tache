@@ -214,7 +214,7 @@ public class MainController {
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onDeleteTask));
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted));
             kanbanList.getSelectionModel().selectedItemProperty()
                     .addListener((obs, oldValue, newValue) -> showTaskDetail(newValue));
             // Re-selecting an already-selected card doesn't re-fire the

@@ -29,6 +29,10 @@ ne quitte la machine : tout est stocke en local.
   aussitot enregistre et journalise dans l'historique, comme un changement
   de statut depuis le formulaire de detail. La navigation par jour, le
   filtre de priorite et le tri par priorite restent actifs dans cette vue.
+  Les cartes n'ont pas de bouton de suppression (contrairement aux vues
+  Jour/Semaine) : elles sont volontairement epurees, avec les badges
+  alignes a droite pour rester lisibles ; supprimer une tache reste
+  possible depuis la vue Jour ou Semaine.
 - **Calendrier de selection** : un champ de date dans la barre du haut
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
   le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
