@@ -16,8 +16,9 @@ ne quitte la machine : tout est stocke en local.
   afficher les taches de toute une semaine (lundi a dimanche) au lieu d'un
   seul jour, chaque tache affichant un badge avec sa date. Les boutons
   precedent/suivant avancent alors d'une semaine entiere.
-- **Vue Kanban** : bascule "Kanban" dans la barre du haut pour afficher les
-  taches du jour selectionne en trois colonnes (A faire / En cours /
+- **Vue Kanban (vue par defaut au lancement)** : bascule "Kanban" dans la
+  barre du haut pour afficher les taches du jour selectionne en trois
+  colonnes (A faire / En cours /
   Terminee) au lieu d'une liste unique, chaque colonne affichant son nombre
   de taches. Le panneau de detail lateral est alors entierement retire de
   la fenetre (les colonnes occupent toute la largeur disponible) et le

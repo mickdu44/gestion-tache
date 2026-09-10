@@ -35,13 +35,13 @@
                 <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
                 <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
                 <DatePicker fx:id="datePickerNav"/>
-                <ToggleButton fx:id="dayViewButton" text="Jour" selected="true" styleClass="view-toggle">
+                <ToggleButton fx:id="dayViewButton" text="Jour" styleClass="view-toggle">
                     <toggleGroup>
                         <ToggleGroup fx:id="viewModeGroup"/>
                     </toggleGroup>
                 </ToggleButton>
                 <ToggleButton fx:id="weekViewButton" text="Semaine" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
-                <ToggleButton fx:id="kanbanViewButton" text="Kanban" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
+                <ToggleButton fx:id="kanbanViewButton" text="Kanban" selected="true" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
             </HBox>
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <ComboBox fx:id="priorityFilterCombo"/>

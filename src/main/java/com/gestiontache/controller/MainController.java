@@ -148,7 +148,7 @@ public class MainController {
 
     private TaskService taskService;
     private LocalDate currentDate;
-    private ViewMode viewMode = ViewMode.JOUR;
+    private ViewMode viewMode = ViewMode.KANBAN;
 
     /** The task currently shown/edited in the right-hand panel, or null when none is selected. */
     private Task selectedTask;
