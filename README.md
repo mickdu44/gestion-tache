@@ -71,7 +71,10 @@ ne quitte la machine : tout est stocke en local.
   Semaine ou carte Kanban) affiche une bulle avec son detail en lecture
   seule (titre, priorite, recurrence, statut, date, description,
   sous-taches et pieces jointes), pour la consulter sans ouvrir son
-  edition via le bouton "Modifier".
+  edition via le bouton "Modifier". La bulle occupe un tiers de la
+  largeur et la moitie de la hauteur de la fenetre (avec une opacite de
+  90%), et son contenu defile si besoin plutot que de deborder de
+  cette taille.
 - **Texte enrichi, avec apercu Markdown** : la description accepte une mise
   en forme simple — `**gras**`, `*italique*`, des lignes commencant par
   `- ` pour une liste a puces, et `[texte](url)` pour un lien cliquable.

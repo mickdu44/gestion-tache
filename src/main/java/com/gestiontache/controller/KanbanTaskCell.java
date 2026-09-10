@@ -10,6 +10,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -49,6 +50,7 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final Label recurrenceBadge = new Label();
     private final Label subtaskBadge = new Label();
     private final Tooltip detailTooltip = new Tooltip();
+    private final ScrollPane detailTooltipScroll = new ScrollPane();
     private final VBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
@@ -80,9 +82,14 @@ public class KanbanTaskCell extends ListCell<Task> {
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
 
+        detailTooltipScroll.setFitToWidth(true);
+        detailTooltipScroll.getStyleClass().add("task-preview-scroll");
+        detailTooltip.setGraphic(detailTooltipScroll);
         detailTooltip.setShowDelay(Duration.millis(400));
         detailTooltip.setShowDuration(Duration.seconds(30));
+        detailTooltip.setOpacity(0.9);
         detailTooltip.getStyleClass().add("task-preview-tooltip");
+        detailTooltip.setOnShowing(e -> TaskPreview.sizeToWindow(detailTooltip, detailTooltipScroll, this));
         setTooltip(detailTooltip);
 
         doneCheckBox.setOnAction(e -> {
@@ -125,7 +132,7 @@ public class KanbanTaskCell extends ListCell<Task> {
             return;
         }
         setTooltip(detailTooltip);
-        detailTooltip.setGraphic(TaskPreview.build(task));
+        detailTooltipScroll.setContent(TaskPreview.build(task));
 
         doneCheckBox.setSelected(task.isCompleted());
         titleLabel.setText(task.getTitle());

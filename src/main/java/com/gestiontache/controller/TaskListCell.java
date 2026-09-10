@@ -13,6 +13,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -56,6 +57,7 @@ public class TaskListCell extends ListCell<Task> {
     private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
     private final Tooltip detailTooltip = new Tooltip();
+    private final ScrollPane detailTooltipScroll = new ScrollPane();
     private final HBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
@@ -106,9 +108,14 @@ public class TaskListCell extends ListCell<Task> {
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
 
+        detailTooltipScroll.setFitToWidth(true);
+        detailTooltipScroll.getStyleClass().add("task-preview-scroll");
+        detailTooltip.setGraphic(detailTooltipScroll);
         detailTooltip.setShowDelay(Duration.millis(400));
         detailTooltip.setShowDuration(Duration.seconds(30));
+        detailTooltip.setOpacity(0.9);
         detailTooltip.getStyleClass().add("task-preview-tooltip");
+        detailTooltip.setOnShowing(e -> TaskPreview.sizeToWindow(detailTooltip, detailTooltipScroll, this));
         setTooltip(detailTooltip);
 
         dragHandle.setVisible(reorderEnabled);
@@ -211,7 +218,7 @@ public class TaskListCell extends ListCell<Task> {
             return;
         }
         setTooltip(detailTooltip);
-        detailTooltip.setGraphic(TaskPreview.build(task));
+        detailTooltipScroll.setContent(TaskPreview.build(task));
 
         doneCheckBox.setSelected(task.isCompleted());
         titleLabel.setText(task.getTitle());
