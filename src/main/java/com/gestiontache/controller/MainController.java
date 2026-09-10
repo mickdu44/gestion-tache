@@ -160,7 +160,8 @@ public class MainController {
      * In Kanban mode, {@link #detailContent} is reparented into this popup
      * instead of staying inline in {@link #detailPane} (a Kanban card is too
      * narrow to show the full detail next to it). Created lazily, reused
-     * across selections, non-modal so the board stays clickable.
+     * across selections; modal (see {@link #sizeAsPopin}) so it always
+     * stays in the foreground while open.
      */
     private Dialog<Void> kanbanDetailDialog;
     /** Holds {@link #detailContent} inside {@link #kanbanDetailDialog}, so a task with many subtasks/attachments/history entries scrolls instead of growing the popup past the screen. */
@@ -212,7 +213,7 @@ public class MainController {
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onEditTask));
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onEditTask, this::onToggleSubtask));
         }
         setUpKanbanColumnDropTarget(kanbanTodoList, TaskStatus.A_FAIRE);
         setUpKanbanColumnDropTarget(kanbanInProgressList, TaskStatus.EN_COURS);
@@ -456,6 +457,14 @@ public class MainController {
         refresh();
     }
 
+    /** Called when a subtask's checkbox is toggled directly from a Kanban postit card, without opening the task's editor. */
+    private void onToggleSubtask(Task task, SubTask subTask, boolean completed) {
+        subTask.setCompleted(completed);
+        task.addHistoryEntry("Sous-tache " + (completed ? "cochee" : "decochee") + " : \"" + subTask.getTitle() + "\"");
+        taskService.updateTask(task, task.getDate());
+        refresh();
+    }
+
     private void onDeleteTask(Task task) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Supprimer la tache");
@@ -551,7 +560,7 @@ public class MainController {
         return isSearching() || viewMode == ViewMode.SEMAINE;
     }
 
-    /** Opens the dialog to create a new task, returned on confirmation. Editing happens inline in the detail panel. */
+    /** Opens the popin to create a new task, returned on confirmation. Editing an existing task happens inline in the detail panel/popup instead. */
     private Optional<Task> openTaskDialog(LocalDate defaultDate) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/gestiontache/task-dialog.fxml"));
@@ -562,6 +571,9 @@ public class MainController {
             Dialog<Task> dialog = new Dialog<>();
             dialog.setTitle("Nouvelle tache");
             dialog.setDialogPane(pane);
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setResizable(true);
+            sizeAsPopin(pane);
 
             Button okButton = (Button) pane.lookupButton(ButtonType.OK);
             okButton.disableProperty().bind(controller.getTitleField().textProperty().isEmpty());
@@ -824,10 +836,10 @@ public class MainController {
 
     /**
      * Moves {@link #detailContent} into the (lazily created) Kanban detail
-     * popup. The content sits inside a scroll pane and the dialog's size is
-     * clamped to the visible screen, so a task with many subtasks,
-     * attachments or history entries scrolls within the popup instead of
-     * growing it past the screen's edges.
+     * popup. The content sits inside a scroll pane sized as a popin (see
+     * {@link #sizeAsPopin}), so a task with many subtasks, attachments or
+     * history entries scrolls within the popup instead of growing it past
+     * that size.
      */
     private void ensureDetailContentInDialog() {
         if (kanbanDetailDialog == null) {
@@ -836,25 +848,35 @@ public class MainController {
             kanbanDetailScrollPane.getStyleClass().add("kanban-detail-scroll");
 
             kanbanDetailDialog = new Dialog<>();
-            kanbanDetailDialog.initModality(Modality.NONE);
+            kanbanDetailDialog.initModality(Modality.APPLICATION_MODAL);
             kanbanDetailDialog.setDialogPane(new DialogPane());
             kanbanDetailDialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
             kanbanDetailDialog.getDialogPane().getStylesheets()
                     .add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
             kanbanDetailDialog.getDialogPane().setContent(kanbanDetailScrollPane);
             kanbanDetailDialog.setResizable(true);
-
-            Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
-            double maxWidth = Math.max(320, visualBounds.getWidth() - 80);
-            double maxHeight = Math.max(320, visualBounds.getHeight() - 80);
-            kanbanDetailDialog.getDialogPane().setMaxWidth(maxWidth);
-            kanbanDetailDialog.getDialogPane().setMaxHeight(maxHeight);
-            kanbanDetailDialog.getDialogPane().setPrefSize(Math.min(420, maxWidth), Math.min(640, maxHeight));
+            sizeAsPopin(kanbanDetailDialog.getDialogPane());
         }
         if (detailContent.getParent() != kanbanDetailScrollPane) {
             detailPane.getChildren().remove(detailContent);
             kanbanDetailScrollPane.setContent(detailContent);
         }
+    }
+
+    /**
+     * Sizes {@code pane} as a "popin": exactly half the visible screen's
+     * width and height, capped at the full screen so a manual resize can't
+     * push it off-screen. Used for both the task creation dialog and the
+     * Kanban edit popup, which are always modal (see their
+     * {@code initModality} calls) so they stay in the foreground while open.
+     */
+    private void sizeAsPopin(DialogPane pane) {
+        Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
+        double width = visualBounds.getWidth() / 2;
+        double height = visualBounds.getHeight() / 2;
+        pane.setPrefSize(width, height);
+        pane.setMaxWidth(visualBounds.getWidth());
+        pane.setMaxHeight(visualBounds.getHeight());
     }
 
     private void showInfo(String message) {

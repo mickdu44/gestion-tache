@@ -532,49 +532,28 @@
     -fx-background-color: transparent;
 }
 
-.task-preview-tooltip {
-    -fx-background-color: -win-surface;
-    -fx-background-radius: 8;
-    -fx-border-color: -win-border-strong;
-    -fx-border-radius: 8;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 12, 0, 0, 3);
-    -fx-padding: 0;
+.postit-card {
+    -fx-background-color: #fff4b8;
+    -fx-background-radius: 4;
+    -fx-border-color: rgba(0,0,0,0.10);
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 6, 0, 2, 3);
 }
 
-.task-preview-title {
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -win-text;
-}
-
-.task-preview-description {
-    -fx-padding: 2 0 0 0;
-}
-
-.task-preview-subtask {
+.postit-description {
     -fx-font-size: 12px;
     -fx-text-fill: -win-text-secondary;
 }
 
-.task-preview-subtask-completed {
-    -fx-strikethrough: true;
-    -fx-text-fill: -win-text-disabled;
-}
-
-.task-preview-attachment {
+.postit-subtask {
     -fx-font-size: 12px;
     -fx-text-fill: -win-text-secondary;
 }
 
-.task-preview-more {
+.postit-more {
     -fx-font-size: 12px;
     -fx-font-style: italic;
     -fx-text-fill: -win-text-disabled;
-}
-
-.task-preview-scroll,
-.task-preview-scroll > .viewport {
-    -fx-background-color: transparent;
 }
 
 .description-preview-scroll,
