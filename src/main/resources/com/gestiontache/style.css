@@ -572,6 +572,11 @@
     -fx-text-fill: -win-text-disabled;
 }
 
+.task-preview-scroll,
+.task-preview-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
 .description-preview-scroll,
 .description-preview-scroll > .viewport {
     -fx-background-color: transparent;
