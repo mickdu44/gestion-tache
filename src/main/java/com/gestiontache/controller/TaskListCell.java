@@ -13,15 +13,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -34,11 +31,9 @@ import java.util.function.Consumer;
  * search results), and "Modifier"/"Supprimer" actions. Selecting or
  * clicking a row no longer opens the detail panel by itself: only the
  * "Modifier" button does, so browsing/reordering the list doesn't
- * accidentally pop the editor open. Hovering the row, however, shows a
- * read-only preview of the task's detail in a tooltip (see
- * {@link TaskPreview}), so a task can be consulted without opening it.
- * When browsing a single day without any priority filter active, rows can
- * be dragged to reorder the tasks manually.
+ * accidentally pop the editor open. When browsing a single day without
+ * any priority filter active, rows can be dragged to reorder the tasks
+ * manually.
  */
 public class TaskListCell extends ListCell<Task> {
 
@@ -56,8 +51,6 @@ public class TaskListCell extends ListCell<Task> {
     private final Label dateBadge = new Label();
     private final Button editButton = new Button("Modifier");
     private final Button deleteButton = new Button("Supprimer");
-    private final Tooltip detailTooltip = new Tooltip();
-    private final ScrollPane detailTooltipScroll = new ScrollPane();
     private final HBox root;
 
     private final BiConsumer<Task, Boolean> onToggle;
@@ -107,16 +100,6 @@ public class TaskListCell extends ListCell<Task> {
         root.getStyleClass().add("task-row");
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
-
-        detailTooltipScroll.setFitToWidth(true);
-        detailTooltipScroll.getStyleClass().add("task-preview-scroll");
-        detailTooltip.setGraphic(detailTooltipScroll);
-        detailTooltip.setShowDelay(Duration.millis(400));
-        detailTooltip.setShowDuration(Duration.seconds(30));
-        detailTooltip.setOpacity(0.9);
-        detailTooltip.getStyleClass().add("task-preview-tooltip");
-        detailTooltip.setOnShowing(e -> TaskPreview.sizeToWindow(detailTooltip, detailTooltipScroll, this));
-        setTooltip(detailTooltip);
 
         dragHandle.setVisible(reorderEnabled);
         dragHandle.setManaged(reorderEnabled);
@@ -214,11 +197,8 @@ public class TaskListCell extends ListCell<Task> {
         if (empty || task == null) {
             setGraphic(null);
             setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-            setTooltip(null);
             return;
         }
-        setTooltip(detailTooltip);
-        detailTooltipScroll.setContent(TaskPreview.build(task));
 
         doneCheckBox.setSelected(task.isCompleted());
         titleLabel.setText(task.getTitle());

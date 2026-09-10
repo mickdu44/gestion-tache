@@ -18,32 +18,33 @@ ne quitte la machine : tout est stocke en local.
   precedent/suivant avancent alors d'une semaine entiere.
 - **Vue Kanban (vue par defaut au lancement)** : bascule "Kanban" dans la
   barre du haut pour afficher les taches du jour selectionne en trois
-  colonnes (A faire / En cours /
-  Terminee) au lieu d'une liste unique, chaque colonne affichant son nombre
-  de taches. Le panneau de detail lateral est alors entierement retire de
-  la fenetre (les colonnes occupent toute la largeur disponible) et le
-  bouton crayon (✎) d'une carte ouvre son detail dans une fenetre separee,
-  dont la taille est limitee a l'ecran visible (le contenu defile a
-  l'interieur de la fenetre plutot que de la faire deborder de l'ecran).
-  Les cartes se glissent-deposent d'une colonne a l'autre pour changer
-  leur statut, y compris pour reclasser une carte dans "A faire" ; le
-  changement est aussitot enregistre et journalise dans l'historique,
-  comme un changement de statut depuis le formulaire de detail. La
-  navigation par jour, le filtre de priorite et le tri par priorite
-  restent actifs dans cette vue. Les cartes n'ont pas de bouton de
-  suppression (contrairement aux vues Jour/Semaine) : elles sont
-  volontairement epurees, avec les badges alignes a droite pour rester
-  lisibles ; supprimer une tache reste possible depuis la vue Jour ou
-  Semaine.
+  colonnes (A faire / En cours / Terminee) au lieu d'une liste unique,
+  chaque colonne affichant son nombre de taches. Le panneau de detail
+  lateral est alors entierement retire de la fenetre (les colonnes
+  occupent toute la largeur disponible). Chaque tache y est representee
+  par une carte au visuel post-it (fond jaune pale, ombre portee) qui
+  rend directement visibles, sans avoir a ouvrir son detail : un extrait
+  de sa description (tronque a 100 caracteres), et jusqu'a 5 de ses
+  sous-taches sous forme de cases a cocher directement actionnables
+  depuis la carte (une sous-tache cochee/decochee ainsi est enregistree
+  et journalisee immediatement, comme depuis le formulaire de detail) ;
+  au-dela de 5, un "+ N autre(s)" indique le reste. Les cartes se
+  glissent-deposent d'une colonne a l'autre pour changer leur statut, y
+  compris pour reclasser une carte dans "A faire". Le bouton crayon (✎)
+  d'une carte ouvre son detail complet dans une popin (voir ci-dessous).
+  Les cartes n'ont pas de bouton de suppression (contrairement aux vues
+  Jour/Semaine) ; supprimer une tache reste possible depuis la vue Jour
+  ou Semaine. La navigation par jour, le filtre de priorite et le tri
+  par priorite restent actifs dans cette vue.
 - **Calendrier de selection** : un champ de date dans la barre du haut
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
   le contient, en vue semaine) sans avoir a cliquer plusieurs fois sur
   precedent/suivant.
 - **Ajout / modification / suppression** de taches. L'ajout se fait via un
-  formulaire dedie ; la modification se fait directement dans le panneau
-  de detail (voir ci-dessous), ouvert via le bouton "Modifier" de la
-  tache (case a cocher directe pour marquer une tache comme terminee,
-  sans avoir a ouvrir son detail).
+  formulaire dedie qui s'ouvre dans une popin ; la modification se fait
+  directement dans le panneau de detail (voir ci-dessous), ouvert via le
+  bouton "Modifier" de la tache (case a cocher directe pour marquer une
+  tache comme terminee, sans avoir a ouvrir son detail).
 - **Priorites** : chaque tache a un niveau (Haute / Moyenne / Basse),
   affiche sous forme de badge colore dans la liste et le detail, et
   filtrable via le menu deroulant de la barre du haut. Une case "Trier
@@ -56,25 +57,21 @@ ne quitte la machine : tout est stocke en local.
 - **Les taches terminees passent en fin de liste** : quel que soit
   l'affichage (jour, semaine, recherche, tri par priorite), les taches
   terminees sont toujours regroupees a la fin de la liste.
-- **Detail de tache editable** : le bouton "Modifier" d'une tache (le
-  crayon ✎ en vue Kanban) affiche son detail complet (titre, priorite,
-  recurrence, statut, date, description, sous-taches, pieces jointes)
-  dans un panneau lateral qui occupe la moitie de la fenetre, et chaque
-  champ y est directement modifiable. Selectionner ou cliquer une tache
-  sans passer par ce bouton n'ouvre plus son detail, pour eviter de
-  l'ouvrir par accident en parcourant ou en reordonnant la liste. Le
-  titre et la description sont enregistres quand on quitte le champ ;
-  les autres champs (priorite, recurrence, statut, date, sous-taches,
-  pieces jointes) sont enregistres immediatement. Plus besoin de rouvrir
-  une fenetre pour corriger une tache existante.
-- **Apercu au survol** : laisser le curseur sur une tache (liste Jour/
-  Semaine ou carte Kanban) affiche une bulle avec son detail en lecture
-  seule (titre, priorite, recurrence, statut, date, description,
-  sous-taches et pieces jointes), pour la consulter sans ouvrir son
-  edition via le bouton "Modifier". La bulle occupe un tiers de la
-  largeur et la moitie de la hauteur de la fenetre (avec une opacite de
-  90%), et son contenu defile si besoin plutot que de deborder de
-  cette taille.
+- **Detail de tache editable** : en vue Jour/Semaine, le bouton "Modifier"
+  d'une tache affiche son detail complet (titre, priorite, recurrence,
+  statut, date, description, sous-taches, pieces jointes) dans un panneau
+  lateral qui occupe la moitie de la fenetre, et chaque champ y est
+  directement modifiable. En vue Kanban, le crayon (✎) d'une carte ouvre
+  ce meme detail dans une popin au premier plan (modale : le reste de la
+  fenetre est bloque tant qu'elle est ouverte), dimensionnee a la moitie
+  de la largeur et de la hauteur de l'ecran. Dans les deux cas,
+  selectionner ou cliquer une tache sans passer par ce bouton n'ouvre
+  plus son detail, pour eviter de l'ouvrir par accident en parcourant ou
+  en reordonnant la liste. Le titre et la description sont enregistres
+  quand on quitte le champ ; les autres champs (priorite, recurrence,
+  statut, date, sous-taches, pieces jointes) sont enregistres
+  immediatement. Plus besoin de rouvrir une fenetre pour corriger une
+  tache existante.
 - **Texte enrichi, avec apercu Markdown** : la description accepte une mise
   en forme simple — `**gras**`, `*italique*`, des lignes commencant par
   `- ` pour une liste a puces, et `[texte](url)` pour un lien cliquable.
