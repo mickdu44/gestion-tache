@@ -4,6 +4,7 @@ import com.gestiontache.model.Priority;
 import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
+import com.gestiontache.model.TaskStatus;
 import com.gestiontache.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,49 @@ class TaskServiceTest {
         List<Task> result = service.getTasksForDate(today);
         assertEquals(List.of(third.getId(), first.getId(), second.getId()),
                 result.stream().map(Task::getId).toList());
+    }
+
+    @Test
+    void reorderTasksForStatusOnlyPermutesThatStatusKeepingOthersInPlace() {
+        Task todoFirst = new Task("A faire 1", "", today);
+        Task inProgress = new Task("En cours", "", today);
+        Task todoSecond = new Task("A faire 2", "", today);
+        Task todoThird = new Task("A faire 3", "", today);
+        inProgress.setStatus(TaskStatus.EN_COURS);
+        service.addTask(todoFirst);
+        service.addTask(inProgress);
+        service.addTask(todoSecond);
+        service.addTask(todoThird);
+
+        // Kanban drag: move "A faire 3" to the front of the "A faire" column.
+        service.reorderTasksForStatus(today, TaskStatus.A_FAIRE,
+                new ArrayList<>(List.of(todoThird, todoFirst, todoSecond)));
+
+        assertEquals(List.of(todoThird.getId(), inProgress.getId(), todoFirst.getId(), todoSecond.getId()),
+                service.getTasksForDate(today).stream().map(Task::getId).toList());
+    }
+
+    @Test
+    void reorderTasksForStatusMovesATaskAcrossColumnsAtGivenSpot() {
+        Task todo = new Task("A faire", "", today);
+        Task inProgressFirst = new Task("En cours 1", "", today);
+        Task inProgressSecond = new Task("En cours 2", "", today);
+        Task todoLast = new Task("A faire dernier", "", today);
+        inProgressFirst.setStatus(TaskStatus.EN_COURS);
+        inProgressSecond.setStatus(TaskStatus.EN_COURS);
+        service.addTask(todo);
+        service.addTask(inProgressFirst);
+        service.addTask(inProgressSecond);
+        service.addTask(todoLast);
+
+        // Kanban drag: drop "A faire" onto "En cours 2", inserting it between the two "En cours" cards.
+        todo.setStatus(TaskStatus.EN_COURS);
+        service.reorderTasksForStatus(today, TaskStatus.EN_COURS,
+                new ArrayList<>(List.of(inProgressFirst, todo, inProgressSecond)));
+
+        assertEquals(TaskStatus.EN_COURS, todo.getStatus());
+        assertEquals(List.of(inProgressFirst.getId(), todo.getId(), inProgressSecond.getId(), todoLast.getId()),
+                service.getTasksForDate(today).stream().map(Task::getId).toList());
     }
 
     @Test

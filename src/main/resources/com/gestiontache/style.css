@@ -540,6 +540,13 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 6, 0, 2, 3);
 }
 
+.postit-card-drag-over {
+    -fx-border-color: -win-accent;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-border-style: dashed;
+}
+
 .postit-description {
     -fx-font-size: 12px;
     -fx-text-fill: -win-text-secondary;

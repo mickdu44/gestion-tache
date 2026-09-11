@@ -213,7 +213,8 @@ public class MainController {
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onEditTask, this::onToggleSubtask));
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onToggleCompleted, this::onEditTask,
+                    this::onToggleSubtask, this::onKanbanCardDroppedOntoCard));
         }
         setUpKanbanColumnDropTarget(kanbanTodoList, TaskStatus.A_FAIRE);
         setUpKanbanColumnDropTarget(kanbanInProgressList, TaskStatus.EN_COURS);
@@ -532,7 +533,11 @@ public class MainController {
         return null;
     }
 
-    /** Persists the status change from a Kanban drag-and-drop move and logs it in the task's history, like any other status change. */
+    /**
+     * Persists the status change from dropping a Kanban card into a
+     * column's empty space (no specific card underneath) and logs it in the
+     * task's history; the card is appended at the end of the target column.
+     */
     private void moveKanbanTaskToStatus(Task task, TaskStatus targetStatus) {
         TaskStatus oldStatus = task.getStatus();
         if (oldStatus == targetStatus) {
@@ -540,8 +545,47 @@ public class MainController {
         }
         task.setStatus(targetStatus);
         task.addHistoryEntry("Statut change : " + oldStatus + " -> " + targetStatus);
-        taskService.updateTask(task, task.getDate());
+        List<Task> newOrder = new ArrayList<>(kanbanListForStatus(targetStatus).getItems());
+        newOrder.add(task);
+        taskService.reorderTasksForStatus(currentDate, targetStatus, newOrder);
         refresh();
+    }
+
+    /**
+     * Persists a Kanban card being dropped directly onto another one: the
+     * dragged task is moved to that exact position, within the same column
+     * (manual reordering) or into a different one (which also changes its
+     * status, logged in its history like any other status change).
+     */
+    private void onKanbanCardDroppedOntoCard(String draggedTaskId, Task targetTask) {
+        Task dragged = findKanbanTaskById(draggedTaskId);
+        if (dragged == null || dragged == targetTask) {
+            return;
+        }
+        TaskStatus targetStatus = targetTask.getStatus();
+        TaskStatus oldStatus = dragged.getStatus();
+        if (oldStatus != targetStatus) {
+            dragged.setStatus(targetStatus);
+            dragged.addHistoryEntry("Statut change : " + oldStatus + " -> " + targetStatus);
+        }
+        List<Task> newOrder = new ArrayList<>(kanbanListForStatus(targetStatus).getItems());
+        newOrder.remove(dragged);
+        newOrder.add(newOrder.indexOf(targetTask), dragged);
+        taskService.reorderTasksForStatus(currentDate, targetStatus, newOrder);
+        refresh();
+    }
+
+    private ListView<Task> kanbanListForStatus(TaskStatus status) {
+        switch (status) {
+            case A_FAIRE:
+                return kanbanTodoList;
+            case EN_COURS:
+                return kanbanInProgressList;
+            case TERMINEE:
+                return kanbanDoneList;
+            default:
+                throw new IllegalArgumentException("Statut Kanban inconnu : " + status);
+        }
     }
 
     /**

@@ -31,9 +31,12 @@ ne quitte la machine : tout est stocke en local.
   formulaire de detail) ; une fois cochee, une sous-tache disparait de
   cette liste (le badge "x/y" reste la pour suivre la progression
   d'ensemble) ; au-dela de 5 sous-taches actives, un "+ N autre(s)"
-  indique le reste. Les cartes se
-  glissent-deposent d'une colonne a l'autre pour changer leur statut, y
-  compris pour reclasser une carte dans "A faire". Le bouton crayon (✎)
+  indique le reste. Les cartes se glissent-deposent librement : deposer
+  une carte sur une autre l'insere juste a cet endroit, que ce soit pour
+  la reordonner manuellement au sein de sa colonne ou pour la deplacer
+  vers une autre colonne (ce qui change alors son statut, y compris pour
+  la reclasser dans "A faire") ; la deposer dans l'espace vide d'une
+  colonne l'ajoute simplement a la fin de celle-ci. Le bouton crayon (✎)
   d'une carte ouvre son detail complet dans une popin (voir ci-dessous).
   Les cartes n'ont pas de bouton de suppression (contrairement aux vues
   Jour/Semaine) ; supprimer une tache reste possible depuis la vue Jour

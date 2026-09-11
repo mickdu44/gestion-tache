@@ -3,6 +3,7 @@ package com.gestiontache.service;
 import com.gestiontache.model.Recurrence;
 import com.gestiontache.model.Task;
 import com.gestiontache.model.TaskStatistics;
+import com.gestiontache.model.TaskStatus;
 import com.gestiontache.repository.TaskRepository;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -87,6 +89,26 @@ public class TaskService {
             }
         }
         persistDate(date);
+    }
+
+    /**
+     * Reassigns manual order values for {@code date}, permuting only the
+     * tasks with {@code status} to match {@code orderedTasksInStatus} while
+     * leaving every other task's relative position (per
+     * {@link #getTasksForDate}) untouched. Used by the Kanban board so a
+     * card can be freely dragged to a new position within its column, or
+     * into another column at a specific spot: the dragged task's status is
+     * expected to already be set to {@code status} by the caller before
+     * this runs.
+     */
+    public void reorderTasksForStatus(LocalDate date, TaskStatus status, List<Task> orderedTasksInStatus) {
+        List<Task> current = getTasksForDate(date);
+        Iterator<Task> replacement = orderedTasksInStatus.iterator();
+        List<Task> result = new ArrayList<>(current.size());
+        for (Task t : current) {
+            result.add(t.getStatus() == status ? replacement.next() : t);
+        }
+        reorderTasksForDate(date, result);
     }
 
     /**
