@@ -39,8 +39,8 @@ ne quitte la machine : tout est stocke en local.
   colonne l'ajoute simplement a la fin de celle-ci. Une carte n'a pas de
   case a cocher pour la marquer terminee directement (contrairement aux
   vues Jour/Semaine) : il faut la glisser dans la colonne "Terminee", ou
-  passer par son detail. Le bouton crayon (✎) d'une carte ouvre son
-  detail complet dans une popin (voir ci-dessous).
+  passer par son detail. Le menu (⋮) d'une carte propose "Modifier", qui
+  ouvre son detail complet dans une popin (voir ci-dessous).
   Les cartes n'ont pas de bouton de suppression (contrairement aux vues
   Jour/Semaine) ; supprimer une tache reste possible depuis la vue Jour
   ou Semaine. La navigation par jour, le filtre de priorite et le tri

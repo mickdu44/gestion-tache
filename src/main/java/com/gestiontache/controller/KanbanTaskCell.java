@@ -6,11 +6,12 @@ import com.gestiontache.model.Task;
 import com.gestiontache.util.DescriptionFormatter;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -26,8 +27,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Post-it-styled card for a single Kanban column: a checkbox/title/edit row,
- * a truncated description preview, up to 5 directly-checkable active
+ * Post-it-styled card for a single Kanban column: a title/edit-menu row, a
+ * truncated description preview, up to 5 directly-checkable active
  * (not-yet-completed) subtasks, and a row of badges aligned to the right.
  * Completed subtasks are left out of that checklist entirely (the "x/y"
  * badge is where overall progress is visible) so the card stays focused on
@@ -41,8 +42,10 @@ import java.util.stream.Collectors;
  * is done by dragging it into/out of the "Terminee" column (or from its
  * detail popin); deleting a task is still available from the Jour/Semaine
  * views. Selecting or clicking a card no longer opens its detail popup by
- * itself: only the edit button does, so dragging a card doesn't
- * accidentally pop it open. Every card is both a drag source and, via its
+ * itself: only the "⋮" menu's "Modifier" entry does, so dragging a card
+ * doesn't accidentally pop it open (the menu button also leaves room for
+ * future per-card actions without needing more icons on the card).
+ * Every card is both a drag source and, via its
  * own drag-over/dropped handlers, a drop target: dropping one card onto
  * another reorders it to that exact spot, whether within the same column
  * (manual ordering) or into a different one (which also changes its
@@ -55,7 +58,7 @@ public class KanbanTaskCell extends ListCell<Task> {
     private static final int MAX_SUBTASKS_SHOWN = 5;
 
     private final Label titleLabel = new Label();
-    private final Button editButton = new Button("✎");
+    private final MenuButton editMenuButton = new MenuButton("⋮");
     private final Label descriptionLabel = new Label();
     private final VBox subtasksBox = new VBox(2);
     private final Label priorityBadge = new Label();
@@ -78,14 +81,23 @@ public class KanbanTaskCell extends ListCell<Task> {
         titleLabel.setMinWidth(0);
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
 
-        editButton.getStyleClass().add("icon-button");
+        editMenuButton.getStyleClass().add("postit-menu-button");
+        MenuItem editMenuItem = new MenuItem("Modifier");
+        editMenuItem.setOnAction(e -> {
+            Task task = getItem();
+            if (task != null) {
+                getListView().getSelectionModel().select(task);
+                this.onEdit.accept(task);
+            }
+        });
+        editMenuButton.getItems().add(editMenuItem);
         descriptionLabel.getStyleClass().add("postit-description");
         descriptionLabel.setWrapText(true);
         priorityBadge.getStyleClass().add("priority-badge");
         recurrenceBadge.getStyleClass().add("recurrence-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
 
-        HBox topRow = new HBox(8, titleLabel, editButton);
+        HBox topRow = new HBox(8, titleLabel, editMenuButton);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         FlowPane badgeRow = new FlowPane(6, 4, priorityBadge, recurrenceBadge, subtaskBadge);
@@ -96,14 +108,6 @@ public class KanbanTaskCell extends ListCell<Task> {
         root.setPadding(new Insets(10, 12, 10, 12));
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
-
-        editButton.setOnAction(e -> {
-            Task task = getItem();
-            if (task != null) {
-                getListView().getSelectionModel().select(task);
-                this.onEdit.accept(task);
-            }
-        });
 
         root.setOnDragDetected(event -> {
             Task task = getItem();

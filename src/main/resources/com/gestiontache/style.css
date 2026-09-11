@@ -364,6 +364,29 @@
     -fx-background-color: -win-control-pressed;
 }
 
+.postit-menu-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 2 6 2 6;
+}
+
+.postit-menu-button:hover,
+.postit-menu-button:showing {
+    -fx-background-color: -win-control-hover;
+}
+
+/* Hides the default dropdown arrow: the "⋮" glyph is the only affordance needed. */
+.postit-menu-button > .arrow-button {
+    -fx-padding: 0;
+}
+
+.postit-menu-button > .arrow-button > .arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
 .view-toggle {
     -fx-background-color: transparent;
     -fx-border-color: -win-border-strong;
