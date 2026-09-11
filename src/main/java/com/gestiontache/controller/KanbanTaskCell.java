@@ -40,10 +40,12 @@ import java.util.stream.Collectors;
  * says its status; deleting a task is still available from the Jour/Semaine
  * views. Selecting or clicking a card no longer opens its detail popup by
  * itself: only the edit button does, so dragging a card doesn't
- * accidentally pop it open. The whole card is still a drag source (see
- * {@link MainController}'s per-column drop targets), letting a card be
- * dragged into another column to change its status; there is no manual
- * ordering within a column.
+ * accidentally pop it open. Every card is both a drag source and, via its
+ * own drag-over/dropped handlers, a drop target: dropping one card onto
+ * another reorders it to that exact spot, whether within the same column
+ * (manual ordering) or into a different one (which also changes its
+ * status, like dropping into a column's empty space still does via
+ * {@link MainController}'s per-column drop targets).
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
@@ -63,12 +65,14 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final BiConsumer<Task, Boolean> onToggle;
     private final Consumer<Task> onEdit;
     private final SubtaskToggleHandler onToggleSubtask;
+    private final BiConsumer<String, Task> onCardDropped;
 
     public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit,
-                           SubtaskToggleHandler onToggleSubtask) {
+                           SubtaskToggleHandler onToggleSubtask, BiConsumer<String, Task> onCardDropped) {
         this.onToggle = onToggle;
         this.onEdit = onEdit;
         this.onToggleSubtask = onToggleSubtask;
+        this.onCardDropped = onCardDropped;
 
         titleLabel.getStyleClass().add("task-title");
         titleLabel.setWrapText(true);
@@ -120,7 +124,43 @@ public class KanbanTaskCell extends ListCell<Task> {
             dragboard.setContent(content);
             event.consume();
         });
-        root.setOnDragDone(event -> event.consume());
+        root.setOnDragDone(event -> {
+            root.getStyleClass().remove("postit-card-drag-over");
+            event.consume();
+        });
+
+        // Dropping a card directly onto another one reorders it right there
+        // (within the same column, or into another column at that exact
+        // spot); dropping into a column's empty space instead falls through
+        // to MainController's column-level handler, which appends it at
+        // the end. Consuming the event here is what keeps that fallback
+        // from also firing.
+        root.setOnDragOver(event -> {
+            if (event.getGestureSource() != root && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.MOVE);
+                event.consume();
+            }
+        });
+        root.setOnDragEntered(event -> {
+            if (event.getGestureSource() != root && event.getDragboard().hasString()) {
+                root.getStyleClass().add("postit-card-drag-over");
+            }
+        });
+        root.setOnDragExited(event -> root.getStyleClass().remove("postit-card-drag-over"));
+        root.setOnDragDropped(event -> {
+            Dragboard dragboard = event.getDragboard();
+            boolean success = false;
+            Task target = getItem();
+            if (dragboard.hasString() && target != null) {
+                String draggedId = dragboard.getString();
+                if (!draggedId.equals(target.getId())) {
+                    onCardDropped.accept(draggedId, target);
+                    success = true;
+                }
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
     }
 
     @Override
