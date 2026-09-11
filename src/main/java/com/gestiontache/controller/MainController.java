@@ -213,7 +213,7 @@ public class MainController {
         // Kanban columns use a compact card (KanbanTaskCell) instead of
         // TaskListCell's wide row, which doesn't fit a narrow column.
         for (ListView<Task> kanbanList : List.of(kanbanTodoList, kanbanInProgressList, kanbanDoneList)) {
-            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onEditTask,
+            kanbanList.setCellFactory(list -> new KanbanTaskCell(this::onEditTask, this::onDeleteTask,
                     this::onToggleSubtask, this::onKanbanCardDroppedOntoCard));
         }
         setUpKanbanColumnDropTarget(kanbanTodoList, TaskStatus.A_FAIRE);
