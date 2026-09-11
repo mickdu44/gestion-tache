@@ -25,10 +25,13 @@ ne quitte la machine : tout est stocke en local.
   par une carte au visuel post-it (fond jaune pale, ombre portee) qui
   rend directement visibles, sans avoir a ouvrir son detail : un extrait
   de sa description (tronque a 100 caracteres), et jusqu'a 5 de ses
-  sous-taches sous forme de cases a cocher directement actionnables
-  depuis la carte (une sous-tache cochee/decochee ainsi est enregistree
-  et journalisee immediatement, comme depuis le formulaire de detail) ;
-  au-dela de 5, un "+ N autre(s)" indique le reste. Les cartes se
+  sous-taches encore actives (non terminees) sous forme de cases a cocher
+  directement actionnables depuis la carte (une sous-tache cochee/decochee
+  ainsi est enregistree et journalisee immediatement, comme depuis le
+  formulaire de detail) ; une fois cochee, une sous-tache disparait de
+  cette liste (le badge "x/y" reste la pour suivre la progression
+  d'ensemble) ; au-dela de 5 sous-taches actives, un "+ N autre(s)"
+  indique le reste. Les cartes se
   glissent-deposent d'une colonne a l'autre pour changer leur statut, y
   compris pour reclasser une carte dans "A faire". Le bouton crayon (✎)
   d'une carte ouvre son detail complet dans une popin (voir ci-dessous).
