@@ -23,14 +23,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Post-it-styled card for a single Kanban column: a checkbox/title/edit row,
- * a truncated description preview, up to 5 directly-checkable subtasks, and
- * a row of badges aligned to the right. Unlike {@link TaskListCell} (a wide
- * row meant for the full-width flat list), this fits a narrow column and
- * looks like a sticky note rather than a plain list row, so its content is
- * always visible instead of needing a hover preview or opening the editor.
+ * a truncated description preview, up to 5 directly-checkable active
+ * (not-yet-completed) subtasks, and a row of badges aligned to the right.
+ * Completed subtasks are left out of that checklist entirely (the "x/y"
+ * badge is where overall progress is visible) so the card stays focused on
+ * what's still left to do. Unlike {@link TaskListCell} (a wide row meant
+ * for the full-width flat list), this fits a narrow column and looks like
+ * a sticky note rather than a plain list row, so its content is always
+ * visible instead of needing a hover preview or opening the editor.
  * There is no drag handle, delete button, date badge, or status badge: it
  * is always scoped to a single day and the column a card sits in already
  * says its status; deleting a task is still available from the Jour/Semaine
@@ -148,14 +152,17 @@ public class KanbanTaskCell extends ListCell<Task> {
         descriptionLabel.setManaged(hasDescription);
 
         List<SubTask> subtasks = task.getSubtasks();
-        boolean hasSubtasks = !subtasks.isEmpty();
+        List<SubTask> activeSubtasks = subtasks.stream()
+                .filter(subTask -> !subTask.isCompleted())
+                .collect(Collectors.toList());
+        boolean hasActiveSubtasks = !activeSubtasks.isEmpty();
         subtasksBox.getChildren().clear();
-        if (hasSubtasks) {
-            int shown = Math.min(subtasks.size(), MAX_SUBTASKS_SHOWN);
+        if (hasActiveSubtasks) {
+            int shown = Math.min(activeSubtasks.size(), MAX_SUBTASKS_SHOWN);
             for (int i = 0; i < shown; i++) {
-                SubTask subTask = subtasks.get(i);
+                SubTask subTask = activeSubtasks.get(i);
                 CheckBox subtaskCheckBox = new CheckBox(subTask.getTitle());
-                subtaskCheckBox.setSelected(subTask.isCompleted());
+                subtaskCheckBox.setSelected(false);
                 subtaskCheckBox.setWrapText(true);
                 subtaskCheckBox.getStyleClass().add("postit-subtask");
                 subtaskCheckBox.setOnAction(e -> {
@@ -166,14 +173,14 @@ public class KanbanTaskCell extends ListCell<Task> {
                 });
                 subtasksBox.getChildren().add(subtaskCheckBox);
             }
-            if (subtasks.size() > shown) {
-                Label more = new Label("+ " + (subtasks.size() - shown) + " autre(s)");
+            if (activeSubtasks.size() > shown) {
+                Label more = new Label("+ " + (activeSubtasks.size() - shown) + " autre(s)");
                 more.getStyleClass().add("postit-more");
                 subtasksBox.getChildren().add(more);
             }
         }
-        subtasksBox.setVisible(hasSubtasks);
-        subtasksBox.setManaged(hasSubtasks);
+        subtasksBox.setVisible(hasActiveSubtasks);
+        subtasksBox.setManaged(hasActiveSubtasks);
 
         priorityBadge.setText(task.getPriority().toString());
         priorityBadge.getStyleClass().removeIf(c -> c.startsWith("priority-") && !c.equals("priority-badge"));
@@ -184,8 +191,9 @@ public class KanbanTaskCell extends ListCell<Task> {
         recurrenceBadge.setVisible(recurring);
         recurrenceBadge.setManaged(recurring);
 
+        boolean hasSubtasks = !subtasks.isEmpty();
         if (hasSubtasks) {
-            long done = subtasks.stream().filter(SubTask::isCompleted).count();
+            long done = subtasks.size() - activeSubtasks.size();
             subtaskBadge.setText(done + "/" + subtasks.size());
         }
         subtaskBadge.setVisible(hasSubtasks);
