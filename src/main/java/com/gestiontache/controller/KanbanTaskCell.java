@@ -35,9 +35,11 @@ import java.util.stream.Collectors;
  * for the full-width flat list), this fits a narrow column and looks like
  * a sticky note rather than a plain list row, so its content is always
  * visible instead of needing a hover preview or opening the editor.
- * There is no drag handle, delete button, date badge, or status badge: it
- * is always scoped to a single day and the column a card sits in already
- * says its status; deleting a task is still available from the Jour/Semaine
+ * There is no drag handle, delete button, date badge, status badge, or
+ * done checkbox: it is always scoped to a single day and the column a
+ * card sits in already says its status, and marking a task done/not done
+ * is done by dragging it into/out of the "Terminee" column (or from its
+ * detail popin); deleting a task is still available from the Jour/Semaine
  * views. Selecting or clicking a card no longer opens its detail popup by
  * itself: only the edit button does, so dragging a card doesn't
  * accidentally pop it open. Every card is both a drag source and, via its
@@ -52,7 +54,6 @@ public class KanbanTaskCell extends ListCell<Task> {
     private static final int MAX_DESCRIPTION_CHARS = 100;
     private static final int MAX_SUBTASKS_SHOWN = 5;
 
-    private final CheckBox doneCheckBox = new CheckBox();
     private final Label titleLabel = new Label();
     private final Button editButton = new Button("✎");
     private final Label descriptionLabel = new Label();
@@ -62,14 +63,12 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final Label subtaskBadge = new Label();
     private final VBox root;
 
-    private final BiConsumer<Task, Boolean> onToggle;
     private final Consumer<Task> onEdit;
     private final SubtaskToggleHandler onToggleSubtask;
     private final BiConsumer<String, Task> onCardDropped;
 
-    public KanbanTaskCell(BiConsumer<Task, Boolean> onToggle, Consumer<Task> onEdit,
-                           SubtaskToggleHandler onToggleSubtask, BiConsumer<String, Task> onCardDropped) {
-        this.onToggle = onToggle;
+    public KanbanTaskCell(Consumer<Task> onEdit, SubtaskToggleHandler onToggleSubtask,
+                           BiConsumer<String, Task> onCardDropped) {
         this.onEdit = onEdit;
         this.onToggleSubtask = onToggleSubtask;
         this.onCardDropped = onCardDropped;
@@ -86,7 +85,7 @@ public class KanbanTaskCell extends ListCell<Task> {
         recurrenceBadge.getStyleClass().add("recurrence-badge");
         subtaskBadge.getStyleClass().add("subtask-count-badge");
 
-        HBox topRow = new HBox(8, doneCheckBox, titleLabel, editButton);
+        HBox topRow = new HBox(8, titleLabel, editButton);
         topRow.setAlignment(Pos.CENTER_LEFT);
 
         FlowPane badgeRow = new FlowPane(6, 4, priorityBadge, recurrenceBadge, subtaskBadge);
@@ -98,12 +97,6 @@ public class KanbanTaskCell extends ListCell<Task> {
         root.setMaxWidth(Double.MAX_VALUE);
         setMaxWidth(Double.MAX_VALUE);
 
-        doneCheckBox.setOnAction(e -> {
-            Task task = getItem();
-            if (task != null) {
-                this.onToggle.accept(task, doneCheckBox.isSelected());
-            }
-        });
         editButton.setOnAction(e -> {
             Task task = getItem();
             if (task != null) {
@@ -173,7 +166,6 @@ public class KanbanTaskCell extends ListCell<Task> {
             return;
         }
 
-        doneCheckBox.setSelected(task.isCompleted());
         titleLabel.setText(task.getTitle());
         titleLabel.getStyleClass().removeAll("task-title-completed");
         if (task.isCompleted()) {
