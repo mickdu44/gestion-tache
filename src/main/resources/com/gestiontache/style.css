@@ -484,6 +484,11 @@
     -fx-text-fill: -win-text-secondary;
 }
 
+.subtask-edit-label-completed {
+    -fx-strikethrough: true;
+    -fx-text-fill: -win-text-disabled;
+}
+
 .detail-history-list {
     -fx-background-color: transparent;
     -fx-border-color: #e5e7eb;

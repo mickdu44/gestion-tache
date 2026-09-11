@@ -89,7 +89,8 @@ ne quitte la machine : tout est stocke en local.
   sous-taches cochables, ajoutees, cochees et supprimees directement
   depuis le panneau de detail (ou depuis le formulaire d'ajout pour une
   nouvelle tache), avec un badge de progression (ex. "2/5") visible dans
-  la liste.
+  la liste. Une sous-tache cochee s'affiche barree et passe en fin de la
+  liste des sous-taches, sans affecter l'ordre des non cochees.
 - **Classement manuel** : dans la vue par jour (sans filtre de priorite),
   les taches peuvent etre glissees-deposees pour changer leur ordre.
 - **Historique des changements** : chaque tache garde un journal date de
