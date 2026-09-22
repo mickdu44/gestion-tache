@@ -122,11 +122,17 @@ ne quitte la machine : tout est stocke en local.
   ou la **description** contient les mots-cles saisis (insensible a la
   casse).
 - **Stockage local, un fichier JSON par jour** : les taches sont
-  enregistrees dans `~/.gestion-tache/days/AAAA-MM-JJ.json`, un
+  enregistrees dans `~/.gestion-tache/days/AAAA-MM-JJ.json` par defaut, un
   fichier par journee contenant l'ensemble de ses taches. Une
   modification (ajout, edition, suppression, report) ne reecrit que
   le(s) fichier(s) du/des jour(s) concerne(s) ; un jour vide n'a pas
   de fichier. Aucune base de donnees ni serveur distant.
+- **Dossier de stockage configurable** : le menu "Reglages" (barre du
+  haut) propose "Choisir le dossier de stockage..." pour deplacer les
+  fichiers de taches ailleurs que l'emplacement par defaut (apres
+  confirmation, puisque l'action est definitive). Le nouveau chemin est
+  memorise (`~/.gestion-tache/settings.properties`) et reste actif aux
+  prochains lancements.
 
 ## Prerequis
 
@@ -206,16 +212,22 @@ manuelle de module-path n'est necessaire.
 
 ## Donnees
 
-Les taches sont lues/ecrites dans `~/.gestion-tache/days/`, un fichier
-JSON par jour nomme `AAAA-MM-JJ.json` (ex. `2026-03-10.json`) contenant
-la liste des taches de cette journee. Supprimer ce dossier reinitialise
-l'application (perte de toutes les taches).
+Les taches sont lues/ecrites dans `~/.gestion-tache/days/` par defaut, un
+fichier JSON par jour nomme `AAAA-MM-JJ.json` (ex. `2026-03-10.json`)
+contenant la liste des taches de cette journee. Supprimer ce dossier
+reinitialise l'application (perte de toutes les taches).
+
+Ce dossier peut etre change depuis le menu "Reglages" >
+"Choisir le dossier de stockage..." : les fichiers `.json` existants sont
+alors deplaces vers le nouvel emplacement (apres confirmation), et ce
+choix est memorise dans `~/.gestion-tache/settings.properties` pour les
+lancements suivants.
 
 Si une ancienne installation avait deja produit un fichier unique
 `~/.gestion-tache/tasks.json`, il est automatiquement reparti en
-fichiers journaliers au premier lancement suivant la mise a jour ;
-l'ancien fichier est conserve tel quel (non supprime) a titre de
-sauvegarde.
+fichiers journaliers au premier lancement suivant la mise a jour (tant
+qu'aucun dossier personnalise n'a ete choisi) ; l'ancien fichier est
+conserve tel quel (non supprime) a titre de sauvegarde.
 
 ## Structure du projet
 
@@ -227,6 +239,7 @@ src/main/java/com/gestiontache/
     TaskStatus.java                Modele d'une tache, ses sous-taches et son statut
   repository/TaskRepository.java   Persistance JSON locale (un fichier par jour)
   service/TaskService.java         Logique metier (recherche, report, CRUD)
+  config/AppSettings.java          Preferences (dossier de stockage choisi)
   controller/                      Controleurs JavaFX (FXML)
   util/DescriptionFormatter.java   Rendu du texte enrichi (gras, italique, liens)
 src/main/resources/com/gestiontache/

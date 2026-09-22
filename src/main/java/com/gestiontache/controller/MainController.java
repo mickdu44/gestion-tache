@@ -1,5 +1,6 @@
 package com.gestiontache.controller;
 
+import com.gestiontache.config.AppSettings;
 import com.gestiontache.model.HistoryEntry;
 import com.gestiontache.model.Priority;
 import com.gestiontache.model.Recurrence;
@@ -36,11 +37,15 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -146,6 +151,7 @@ public class MainController {
     @FXML
     private ListView<Task> kanbanDoneList;
 
+    private final AppSettings appSettings = new AppSettings();
     private TaskService taskService;
     private LocalDate currentDate;
     private ViewMode viewMode = ViewMode.KANBAN;
@@ -169,7 +175,7 @@ public class MainController {
 
     @FXML
     private void initialize() {
-        taskService = new TaskService(new TaskRepository());
+        taskService = createTaskService(appSettings.getConfiguredDataDirectory().orElse(null));
         currentDate = LocalDate.now();
 
         priorityFilterCombo.getItems().add(ALL_PRIORITIES);
@@ -364,6 +370,77 @@ public class MainController {
         searchField.clear();
         refresh();
         showInfo(moved + " tache(s) non terminee(s) reportee(s) automatiquement a aujourd'hui.");
+    }
+
+    /**
+     * Lets the user pick a new folder for the day-JSON task files (via the
+     * "Reglages" menu), after confirming: existing .json files are moved
+     * there (not copied, and anything of the same name already present is
+     * overwritten), the choice is persisted in {@link AppSettings} so it
+     * survives a restart, and the board reloads from the new location.
+     */
+    @FXML
+    private void onChooseDataDirectory() {
+        Path currentDir = appSettings.getDataDirectory();
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Choisir le dossier de stockage des taches");
+        if (Files.isDirectory(currentDir)) {
+            chooser.setInitialDirectory(currentDir.toFile());
+        }
+        File selected = chooser.showDialog(kanbanBoard.getScene().getWindow());
+        if (selected == null || selected.toPath().equals(currentDir)) {
+            return;
+        }
+        Path newDir = selected.toPath();
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Changer le dossier de stockage");
+        confirm.setHeaderText("Deplacer les fichiers de taches vers ce dossier ?");
+        confirm.setContentText("Les fichiers .json actuellement dans \"" + currentDir
+                + "\" seront deplaces vers \"" + newDir + "\". Cette action est definitive.");
+        confirm.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            moveDayFiles(currentDir, newDir);
+        } catch (IOException e) {
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setTitle("Echec du deplacement");
+            error.setHeaderText("Impossible de deplacer les fichiers vers ce dossier.");
+            error.setContentText(e.getMessage());
+            error.getDialogPane().getStylesheets().add(getClass().getResource("/com/gestiontache/style.css").toExternalForm());
+            error.showAndWait();
+            return;
+        }
+
+        appSettings.setDataDirectory(newDir);
+        taskService = createTaskService(newDir);
+        searchField.clear();
+        refresh();
+        showInfo("Dossier de stockage change : " + newDir);
+    }
+
+    /** Moves every day-JSON file (anything else in {@code from} is left alone) into {@code to}, created if needed. */
+    private void moveDayFiles(Path from, Path to) throws IOException {
+        Files.createDirectories(to);
+        if (!Files.isDirectory(from)) {
+            return;
+        }
+        try (Stream<Path> files = Files.list(from)) {
+            List<Path> jsonFiles = files.filter(p -> p.toString().endsWith(".json")).toList();
+            for (Path file : jsonFiles) {
+                Files.move(file, to.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+    }
+
+    /** Builds the task service against {@code customDataDir}, or the default (with its legacy-file migration) when null. */
+    private TaskService createTaskService(Path customDataDir) {
+        TaskRepository repository = customDataDir != null ? new TaskRepository(customDataDir) : new TaskRepository();
+        return new TaskService(repository);
     }
 
     @FXML
