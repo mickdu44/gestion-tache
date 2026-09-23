@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -27,30 +28,30 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Post-it-styled card for a single Kanban column: a title/edit-menu row, a
- * truncated description preview, up to 5 directly-checkable active
- * (not-yet-completed) subtasks, and a row of badges aligned to the right.
- * Completed subtasks are left out of that checklist entirely (the "x/y"
- * badge is where overall progress is visible) so the card stays focused on
- * what's still left to do. Unlike {@link TaskListCell} (a wide row meant
- * for the full-width flat list), this fits a narrow column and looks like
- * a sticky note rather than a plain list row, so its content is always
- * visible instead of needing a hover preview or opening the editor.
- * There is no drag handle, delete button, date badge, status badge, or
- * done checkbox: it is always scoped to a single day and the column a
- * card sits in already says its status, and marking a task done/not done
- * is done by dragging it into/out of the "Terminee" column (or from its
- * detail popin); deleting a task is still available from the Jour/Semaine
- * views. Selecting or clicking a card no longer opens its detail popup by
- * itself: only the "⋮" menu's "Modifier" entry does, so dragging a card
- * doesn't accidentally pop it open (the menu button also leaves room for
- * future per-card actions without needing more icons on the card).
- * Every card is both a drag source and, via its
- * own drag-over/dropped handlers, a drop target: dropping one card onto
- * another reorders it to that exact spot, whether within the same column
- * (manual ordering) or into a different one (which also changes its
- * status, like dropping into a column's empty space still does via
- * {@link MainController}'s per-column drop targets).
+ * Post-it-styled card for a single Kanban column: a title row with a "⋮"
+ * menu pinned to its top-right corner, a truncated description preview, up
+ * to 5 directly-checkable active (not-yet-completed) subtasks, and a row of
+ * badges aligned to the right. Completed subtasks are left out of that
+ * checklist entirely (the "x/y" badge is where overall progress is
+ * visible) so the card stays focused on what's still left to do. Unlike
+ * {@link TaskListCell} (a wide row meant for the full-width flat list),
+ * this fits a narrow column and looks like a sticky note rather than a
+ * plain list row, so its content is always visible instead of needing a
+ * hover preview or opening the editor. There is no drag handle, date
+ * badge, status badge, or done checkbox: it is always scoped to a single
+ * day and the column a card sits in already says its status, and marking
+ * a task done/not done is done by dragging it into/out of the "Terminee"
+ * column (or from its detail popin). Selecting or clicking a card no
+ * longer opens its detail popup by itself, and the menu is the only way to
+ * act on a card from the board: "Modifier" opens its detail in the popin,
+ * and "Supprimer" deletes it after the same confirmation dialog as the
+ * Jour/Semaine views, so a task no longer needs to be deleted from another
+ * view. Every card is both a drag source and, via its own drag-over/dropped
+ * handlers, a drop target: dropping one card onto another reorders it to
+ * that exact spot, whether within the same column (manual ordering) or
+ * into a different one (which also changes its status, like dropping into
+ * a column's empty space still does via {@link MainController}'s
+ * per-column drop targets).
  */
 public class KanbanTaskCell extends ListCell<Task> {
 
@@ -67,12 +68,14 @@ public class KanbanTaskCell extends ListCell<Task> {
     private final VBox root;
 
     private final Consumer<Task> onEdit;
+    private final Consumer<Task> onDelete;
     private final SubtaskToggleHandler onToggleSubtask;
     private final BiConsumer<String, Task> onCardDropped;
 
-    public KanbanTaskCell(Consumer<Task> onEdit, SubtaskToggleHandler onToggleSubtask,
+    public KanbanTaskCell(Consumer<Task> onEdit, Consumer<Task> onDelete, SubtaskToggleHandler onToggleSubtask,
                            BiConsumer<String, Task> onCardDropped) {
         this.onEdit = onEdit;
+        this.onDelete = onDelete;
         this.onToggleSubtask = onToggleSubtask;
         this.onCardDropped = onCardDropped;
 
@@ -90,7 +93,14 @@ public class KanbanTaskCell extends ListCell<Task> {
                 this.onEdit.accept(task);
             }
         });
-        editMenuButton.getItems().add(editMenuItem);
+        MenuItem deleteMenuItem = new MenuItem("Supprimer");
+        deleteMenuItem.setOnAction(e -> {
+            Task task = getItem();
+            if (task != null) {
+                this.onDelete.accept(task);
+            }
+        });
+        editMenuButton.getItems().addAll(editMenuItem, new SeparatorMenuItem(), deleteMenuItem);
         descriptionLabel.getStyleClass().add("postit-description");
         descriptionLabel.setWrapText(true);
         priorityBadge.getStyleClass().add("priority-badge");
@@ -99,6 +109,7 @@ public class KanbanTaskCell extends ListCell<Task> {
 
         HBox topRow = new HBox(8, titleLabel, editMenuButton);
         topRow.setAlignment(Pos.CENTER_LEFT);
+        topRow.setMaxWidth(Double.MAX_VALUE);
 
         FlowPane badgeRow = new FlowPane(6, 4, priorityBadge, recurrenceBadge, subtaskBadge);
         badgeRow.setAlignment(Pos.CENTER_RIGHT);

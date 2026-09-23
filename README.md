@@ -39,11 +39,10 @@ ne quitte la machine : tout est stocke en local.
   colonne l'ajoute simplement a la fin de celle-ci. Une carte n'a pas de
   case a cocher pour la marquer terminee directement (contrairement aux
   vues Jour/Semaine) : il faut la glisser dans la colonne "Terminee", ou
-  passer par son detail. Le menu (⋮) d'une carte propose "Modifier", qui
-  ouvre son detail complet dans une popin (voir ci-dessous).
-  Les cartes n'ont pas de bouton de suppression (contrairement aux vues
-  Jour/Semaine) ; supprimer une tache reste possible depuis la vue Jour
-  ou Semaine. La navigation par jour, le filtre de priorite et le tri
+  passer par son detail. Le menu (⋮), en haut a droite de chaque carte,
+  propose "Modifier" (ouvre son detail complet dans une popin, voir
+  ci-dessous) et "Supprimer" (avec une confirmation, comme depuis les
+  vues Jour/Semaine). La navigation par jour, le filtre de priorite et le tri
   par priorite restent actifs dans cette vue.
 - **Calendrier de selection** : un champ de date dans la barre du haut
   permet de sauter directement a n'importe quel jour (ou a la semaine qui
