@@ -6,10 +6,11 @@ ne quitte la machine : tout est stocke en local.
 
 ## Fonctionnalites
 
-- **Style Windows 11 (Fluent Design)** : fond neutre type Mica, cartes
-  blanches aux coins arrondis avec ombre douce, accent bleu Windows 11 sur
-  les boutons principaux, cases a cocher et champs actifs, et champs de
-  saisie avec soulignement plutot que des cadres pleins.
+- **Style sombre et vibrant** : fond quasi noir, cartes gris fonce aux
+  coins tres arrondis avec ombre portee marquee, accent corail/rose avec
+  un degrade orange-vers-rose sur les boutons principaux et l'onglet de
+  vue actif, et une petite palette de couleurs saturees (ambre, bleu
+  ciel, violet, vert) pour les badges (priorite, recurrence, sous-taches).
 - **Vue par jour** : navigation entre les jours (precedent / suivant /
   aujourd'hui) pour afficher les taches du jour selectionne.
 - **Vue semaine** : bascule "Jour" / "Semaine" dans la barre du haut pour
@@ -22,7 +23,7 @@ ne quitte la machine : tout est stocke en local.
   chaque colonne affichant son nombre de taches. Le panneau de detail
   lateral est alors entierement retire de la fenetre (les colonnes
   occupent toute la largeur disponible). Chaque tache y est representee
-  par une carte au visuel post-it (fond jaune pale, ombre portee) qui
+  par une carte au visuel post-it (fond gris fonce, ombre portee) qui
   rend directement visibles, sans avoir a ouvrir son detail : un extrait
   de sa description (tronque a 100 caracteres), et jusqu'a 5 de ses
   sous-taches encore actives (non terminees) sous forme de cases a cocher
