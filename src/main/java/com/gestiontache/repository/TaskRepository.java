@@ -24,7 +24,8 @@ import java.util.stream.Stream;
  */
 public class TaskRepository {
 
-    private static final Path DEFAULT_DATA_DIR =
+    /** Where task files live when the user has never picked a custom folder (see {@code AppSettings}). */
+    public static final Path DEFAULT_DATA_DIR =
             Paths.get(System.getProperty("user.home"), ".gestion-tache", "days");
     private static final Path LEGACY_SINGLE_FILE =
             Paths.get(System.getProperty("user.home"), ".gestion-tache", "tasks.json");

@@ -10,6 +10,9 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextField?>
@@ -25,32 +28,39 @@
             fx:controller="com.gestiontache.controller.MainController"
             stylesheets="@style.css" styleClass="root-pane">
     <top>
-        <VBox spacing="8">
-            <padding>
-                <Insets top="14" right="16" bottom="8" left="16"/>
-            </padding>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button fx:id="prevDayButton" text="◀" onAction="#onPreviousDay" styleClass="icon-button"/>
-                <Label fx:id="dateLabel" styleClass="date-label"/>
-                <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
-                <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
-                <DatePicker fx:id="datePickerNav"/>
-                <ToggleButton fx:id="dayViewButton" text="Jour" styleClass="view-toggle">
-                    <toggleGroup>
-                        <ToggleGroup fx:id="viewModeGroup"/>
-                    </toggleGroup>
-                </ToggleButton>
-                <ToggleButton fx:id="weekViewButton" text="Semaine" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
-                <ToggleButton fx:id="kanbanViewButton" text="Kanban" selected="true" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
-            </HBox>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <ComboBox fx:id="priorityFilterCombo"/>
-                <CheckBox fx:id="sortByPriorityCheckBox" text="Trier par priorite"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>
-                <Button fx:id="clearSearchButton" text="✕" onAction="#onClearSearch" styleClass="icon-button"/>
-            </HBox>
-            <Label fx:id="statusLabel" styleClass="status-label"/>
+        <VBox>
+            <MenuBar>
+                <Menu text="Reglages">
+                    <MenuItem text="Choisir le dossier de stockage..." onAction="#onChooseDataDirectory"/>
+                </Menu>
+            </MenuBar>
+            <VBox spacing="8">
+                <padding>
+                    <Insets top="14" right="16" bottom="8" left="16"/>
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button fx:id="prevDayButton" text="◀" onAction="#onPreviousDay" styleClass="icon-button"/>
+                    <Label fx:id="dateLabel" styleClass="date-label"/>
+                    <Button fx:id="nextDayButton" text="▶" onAction="#onNextDay" styleClass="icon-button"/>
+                    <Button fx:id="todayButton" text="Aujourd'hui" onAction="#onToday"/>
+                    <DatePicker fx:id="datePickerNav"/>
+                    <ToggleButton fx:id="dayViewButton" text="Jour" styleClass="view-toggle">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="viewModeGroup"/>
+                        </toggleGroup>
+                    </ToggleButton>
+                    <ToggleButton fx:id="weekViewButton" text="Semaine" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
+                    <ToggleButton fx:id="kanbanViewButton" text="Kanban" selected="true" toggleGroup="$viewModeGroup" styleClass="view-toggle"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="priorityFilterCombo"/>
+                    <CheckBox fx:id="sortByPriorityCheckBox" text="Trier par priorite"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="searchField" promptText="Rechercher une tache (titre ou description)..." prefWidth="320"/>
+                    <Button fx:id="clearSearchButton" text="✕" onAction="#onClearSearch" styleClass="icon-button"/>
+                </HBox>
+                <Label fx:id="statusLabel" styleClass="status-label"/>
+            </VBox>
         </VBox>
     </top>
     <center>
