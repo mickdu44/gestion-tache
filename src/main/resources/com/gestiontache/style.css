@@ -1,25 +1,27 @@
 /*
- * Windows 11 (Fluent Design) look: Mica-like neutral background, white
- * "card" surfaces with soft rounded corners and subtle elevation shadows,
- * a single accent color (Windows default blue, #0067C0) for anything
- * interactive/selected, and Segoe UI throughout.
+ * Dark, vibrant dashboard look (inspired by a fitness-app moodboard):
+ * near-black background, dark charcoal "card" surfaces with generously
+ * rounded corners and deep elevation shadows, a vivid coral/pink accent
+ * (with an orange-to-pink gradient variant for primary actions) plus a
+ * small palette of saturated category colors (amber, sky blue, purple,
+ * green) for badges, and Segoe UI throughout.
  */
 
 .root {
-    -win-accent: #0067c0;
-    -win-accent-hover: #005a9e;
-    -win-accent-pressed: #004c87;
-    -win-accent-soft: rgba(0, 103, 192, 0.10);
-    -win-surface: #ffffff;
-    -win-bg: #f3f3f3;
-    -win-border: rgba(0, 0, 0, 0.08);
-    -win-border-strong: rgba(0, 0, 0, 0.14);
-    -win-text: #1a1a1a;
-    -win-text-secondary: #5c5c5c;
-    -win-text-disabled: #a6a6a6;
-    -win-control: #fbfbfb;
-    -win-control-hover: #f5f5f5;
-    -win-control-pressed: #e8e8e8;
+    -win-accent: #ff5f6d;
+    -win-accent-hover: #ff7a86;
+    -win-accent-pressed: #e14856;
+    -win-accent-soft: rgba(255, 95, 109, 0.16);
+    -win-surface: #1a1a21;
+    -win-bg: #0c0c10;
+    -win-border: rgba(255, 255, 255, 0.07);
+    -win-border-strong: rgba(255, 255, 255, 0.16);
+    -win-text: #f5f5f7;
+    -win-text-secondary: #9a9aa8;
+    -win-text-disabled: #5c5c6b;
+    -win-control: #222229;
+    -win-control-hover: #2b2b34;
+    -win-control-pressed: #35353f;
 
     -fx-font-family: "Segoe UI Variable", "Segoe UI", Arial, sans-serif;
     -fx-text-fill: -win-text;
@@ -35,10 +37,10 @@
 
 .button {
     -fx-background-color: -win-control;
-    -fx-background-radius: 4;
+    -fx-background-radius: 8;
     -fx-background-insets: 0;
     -fx-border-color: -win-border-strong;
-    -fx-border-radius: 4;
+    -fx-border-radius: 8;
     -fx-border-width: 1;
     -fx-text-fill: -win-text;
     -fx-padding: 6 14 6 14;
@@ -67,7 +69,7 @@
 .combo-box-base,
 .date-picker {
     -fx-background-color: -win-surface;
-    -fx-background-radius: 4;
+    -fx-background-radius: 6;
     -fx-border-color: transparent transparent -win-border-strong transparent;
     -fx-border-width: 0 0 1 0;
     -fx-text-fill: -win-text;
@@ -82,10 +84,17 @@
 
 .combo-box-popup .list-view {
     -fx-background-color: -win-surface;
-    -fx-background-radius: 6;
-    -fx-border-color: -win-border;
-    -fx-border-radius: 6;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12, 0, 0, 3);
+    -fx-background-radius: 8;
+    -fx-border-color: -win-border-strong;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 16, 0, 0, 4);
+}
+
+/* Modena gives every row its own opaque (white) background, which paints
+   over the list-view's background above unless overridden per row too. */
+.combo-box-popup .list-cell {
+    -fx-background-color: -win-surface;
+    -fx-text-fill: -win-text;
 }
 
 .combo-box-popup .list-cell:filled:hover,
@@ -100,12 +109,28 @@
 
 .date-picker-popup {
     -fx-background-color: -win-surface;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.14), 12, 0, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 16, 0, 0, 4);
+}
+
+.date-picker-popup > * > .day-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -win-text;
 }
 
 .date-picker-popup > * > .day-cell:selected {
     -fx-background-color: -win-accent;
     -fx-background-radius: 4;
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .spinner,
+.date-picker-popup .month-year-pane {
+    -fx-background-color: -win-control;
+}
+
+.date-picker-popup .spinner .label,
+.date-picker-popup .spinner .button > .label {
+    -fx-text-fill: -win-text;
 }
 
 .check-box > .box {
@@ -147,19 +172,19 @@
 }
 
 .scroll-bar .track {
-    -fx-background-color: rgba(0, 0, 0, 0.06);
+    -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-background-radius: 0;
     -fx-border-color: transparent;
 }
 
 .scroll-bar .thumb {
-    -fx-background-color: rgba(0, 0, 0, 0.38);
+    -fx-background-color: rgba(255, 255, 255, 0.22);
     -fx-background-radius: 6;
     -fx-background-insets: 2;
 }
 
 .scroll-bar .thumb:hover {
-    -fx-background-color: rgba(0, 0, 0, 0.52);
+    -fx-background-color: rgba(255, 255, 255, 0.34);
 }
 
 .scroll-bar .thumb:pressed {
@@ -175,7 +200,7 @@
 
 .scroll-bar .increment-arrow,
 .scroll-bar .decrement-arrow {
-    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-background-color: rgba(255, 255, 255, 0.5);
 }
 
 .scroll-pane,
@@ -204,6 +229,52 @@
 
 .dialog-pane > .button-bar > .container {
     -fx-padding: 10 4 4 4;
+}
+
+.menu-bar {
+    -fx-background-color: -win-surface;
+    -fx-border-color: transparent transparent -win-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.menu-bar .label {
+    -fx-text-fill: -win-text;
+}
+
+.menu:hover,
+.menu:showing {
+    -fx-background-color: -win-control-hover;
+}
+
+.context-menu {
+    -fx-background-color: -win-surface;
+    -fx-border-color: -win-border-strong;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 16, 0, 0, 4);
+}
+
+/* Modena gives every row its own opaque (white) background, which paints
+   over the context-menu's background above unless overridden per row too. */
+.menu-item {
+    -fx-background-color: -win-surface;
+}
+
+.menu-item:focused,
+.menu-item:hover {
+    -fx-background-color: -win-control-hover;
+}
+
+.menu-item .label {
+    -fx-text-fill: -win-text;
+}
+
+.menu-item:disabled .label {
+    -fx-text-fill: -win-text-disabled;
+}
+
+.separator:horizontal .line {
+    -fx-border-color: -win-border;
 }
 
 /* ---------- App-specific classes ---------- */
@@ -236,16 +307,16 @@
 
 .task-row {
     -fx-background-color: -win-surface;
-    -fx-background-radius: 8;
+    -fx-background-radius: 14;
     -fx-border-color: -win-border;
-    -fx-border-radius: 8;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 6, 0, 0, 1);
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 10, 0, 0, 3);
 }
 
 .task-row-drag-over {
     -fx-border-color: -win-accent;
     -fx-border-width: 0 0 0 4;
-    -fx-border-radius: 8;
+    -fx-border-radius: 14;
 }
 
 .drag-handle {
@@ -272,15 +343,15 @@
 }
 
 .subtask-count-badge {
-    -fx-background-color: #f3e8fd;
+    -fx-background-color: rgba(52, 211, 153, 0.16);
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
-    -fx-text-fill: #6b3fa0;
+    -fx-text-fill: #34d399;
 }
 
 .task-date-badge {
-    -fx-background-color: #eeeeee;
+    -fx-background-color: -win-control;
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
@@ -295,35 +366,35 @@
 }
 
 .priority-badge.priority-haute {
-    -fx-background-color: #fde7e9;
-    -fx-text-fill: #c42b1c;
+    -fx-background-color: rgba(255, 92, 92, 0.18);
+    -fx-text-fill: #ff6b6b;
 }
 
 .priority-badge.priority-moyenne {
-    -fx-background-color: #fff4ce;
-    -fx-text-fill: #8a6d00;
+    -fx-background-color: rgba(255, 180, 84, 0.18);
+    -fx-text-fill: #ffb454;
 }
 
 .priority-badge.priority-basse {
-    -fx-background-color: #dbeffd;
-    -fx-text-fill: #005a9e;
+    -fx-background-color: rgba(77, 166, 255, 0.18);
+    -fx-text-fill: #5cb3ff;
 }
 
 .recurrence-badge {
-    -fx-background-color: #f3e8fd;
+    -fx-background-color: rgba(167, 139, 250, 0.18);
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
-    -fx-text-fill: #6b3fa0;
+    -fx-text-fill: #c9a4ff;
 }
 
 .status-in-progress-badge {
-    -fx-background-color: #fff4ce;
+    -fx-background-color: rgba(255, 180, 84, 0.18);
     -fx-background-radius: 10;
     -fx-padding: 3 8 3 8;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #8a6d00;
+    -fx-text-fill: #ffb454;
 }
 
 .bottom-bar {
@@ -333,19 +404,19 @@
 }
 
 .primary-button {
-    -fx-background-color: -win-accent;
+    -fx-background-color: linear-gradient(to bottom right, #ff8a5b, #ff3d81);
     -fx-border-color: transparent;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 .primary-button:hover {
-    -fx-background-color: -win-accent-hover;
+    -fx-opacity: 0.9;
 }
 
 .primary-button:pressed,
 .primary-button:armed {
-    -fx-background-color: -win-accent-pressed;
+    -fx-opacity: 0.8;
 }
 
 .icon-button {
@@ -400,8 +471,8 @@
 }
 
 .view-toggle:selected {
-    -fx-background-color: -win-accent;
-    -fx-border-color: -win-accent;
+    -fx-background-color: linear-gradient(to bottom right, #ff8a5b, #ff3d81);
+    -fx-border-color: transparent;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
@@ -464,6 +535,40 @@
     -fx-text-fill: -win-text;
 }
 
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-title {
+    -fx-text-fill: -win-text;
+}
+
+.chart-plot-background {
+    -fx-background-color: -win-surface;
+}
+
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: -win-border;
+}
+
+.chart-alternative-row-fill {
+    -fx-fill: transparent;
+    -fx-stroke: transparent;
+}
+
+.axis {
+    -fx-tick-label-fill: -win-text-secondary;
+}
+
+.axis-label {
+    -fx-text-fill: -win-text;
+}
+
+.default-color0.chart-bar {
+    -fx-background-color: linear-gradient(to bottom right, #ff8a5b, #ff3d81);
+}
+
 .md-link {
     -fx-font-size: 13px;
     -fx-text-fill: -win-accent;
@@ -509,28 +614,28 @@
 
 .detail-history-list {
     -fx-background-color: transparent;
-    -fx-border-color: #e5e7eb;
+    -fx-border-color: -win-border;
     -fx-border-radius: 6;
 }
 
 .detail-history-list .list-cell {
     -fx-background-color: transparent;
     -fx-font-size: 11px;
-    -fx-text-fill: #6b7280;
+    -fx-text-fill: -win-text-secondary;
     -fx-padding: 3 6 3 6;
 }
 
 .detail-history-list .placeholder .label {
     -fx-font-size: 12px;
     -fx-font-style: italic;
-    -fx-text-fill: #9ca3af;
+    -fx-text-fill: -win-text-disabled;
 }
 
 .kanban-column {
     -fx-background-color: -win-surface;
-    -fx-background-radius: 8;
+    -fx-background-radius: 16;
     -fx-border-color: -win-border;
-    -fx-border-radius: 8;
+    -fx-border-radius: 16;
     -fx-padding: 10;
     -fx-spacing: 6;
 }
@@ -542,7 +647,7 @@
 }
 
 .kanban-column-drag-over {
-    -fx-background-color: derive(-win-accent, 90%);
+    -fx-background-color: -win-accent-soft;
     -fx-background-radius: 6;
     -fx-border-color: -win-accent;
     -fx-border-width: 2;
@@ -556,17 +661,17 @@
 }
 
 .postit-card {
-    -fx-background-color: #fff4b8;
-    -fx-background-radius: 4;
-    -fx-border-color: rgba(0,0,0,0.10);
-    -fx-border-radius: 4;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.20), 6, 0, 2, 3);
+    -fx-background-color: -win-surface;
+    -fx-background-radius: 14;
+    -fx-border-color: -win-border;
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 10, 0, 0, 4);
 }
 
 .postit-card-drag-over {
     -fx-border-color: -win-accent;
     -fx-border-width: 2;
-    -fx-border-radius: 4;
+    -fx-border-radius: 14;
     -fx-border-style: dashed;
 }
 
