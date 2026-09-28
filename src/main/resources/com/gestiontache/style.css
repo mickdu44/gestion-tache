@@ -18,7 +18,7 @@
     -win-border-strong: rgba(255, 255, 255, 0.16);
     -win-text: #f5f5f7;
     -win-text-secondary: #9a9aa8;
-    -win-text-disabled: #5c5c6b;
+    -win-text-disabled: #86869c;
     -win-control: #222229;
     -win-control-hover: #2b2b34;
     -win-control-pressed: #35353f;
@@ -80,6 +80,18 @@
 .date-picker:focused {
     -fx-border-color: transparent transparent -win-accent transparent;
     -fx-border-width: 0 0 2 0;
+}
+
+/* The value shown in a closed ComboBox is rendered by its own internal
+   ListCell, which (like popup rows) has its own default text color that
+   doesn't just inherit -win-text from .combo-box-base above. */
+.combo-box .list-cell {
+    -fx-text-fill: -win-text;
+    -fx-background-color: transparent;
+}
+
+.check-box {
+    -fx-text-fill: -win-text;
 }
 
 .combo-box-popup .list-view {
