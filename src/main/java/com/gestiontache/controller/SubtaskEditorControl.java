@@ -12,13 +12,18 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
  * Editable checklist of {@link SubTask}s: add a new one, tick/untick, or
  * remove one. Shared by the task creation dialog (which only reads the
  * final list back on OK) and the inline detail-panel editor (which sets
- * {@link #setOnChange} to persist immediately on every mutation).
+ * {@link #setOnChange} to persist immediately on every mutation). Checked
+ * subtasks are shown struck through and sorted after the unchecked ones,
+ * without changing the underlying list order (kept as insertion order, the
+ * same way completed tasks sort last in the main list without an actual
+ * reorder).
  */
 public class SubtaskEditorControl extends VBox {
 
@@ -77,17 +82,24 @@ public class SubtaskEditorControl extends VBox {
     }
 
     private void render() {
+        List<SubTask> ordered = new ArrayList<>(subtasks);
+        ordered.sort(Comparator.comparing(SubTask::isCompleted));
+
         List<Node> rows = new ArrayList<>();
-        for (SubTask subtask : subtasks) {
+        for (SubTask subtask : ordered) {
             CheckBox checkBox = new CheckBox();
             checkBox.setSelected(subtask.isCompleted());
             checkBox.setOnAction(e -> {
                 subtask.setCompleted(checkBox.isSelected());
+                render();
                 fireChange();
             });
 
             Label label = new Label(subtask.getTitle());
             label.getStyleClass().add("subtask-edit-label");
+            if (subtask.isCompleted()) {
+                label.getStyleClass().add("subtask-edit-label-completed");
+            }
             HBox.setHgrow(label, Priority.ALWAYS);
 
             Button remove = new Button("✕");
