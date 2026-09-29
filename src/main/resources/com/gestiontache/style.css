@@ -35,6 +35,16 @@
 /* ---------- Generic controls (Fluent baseline for every plain Button,
    TextField, ComboBox, DatePicker, CheckBox in the app) ---------- */
 
+/* A plain Label with no styleClass otherwise falls back to Modena's own
+   default text-fill (computed for a light theme), not -win-text: unlike
+   most CSS properties, a rule that targets the node directly (even one as
+   generic as ".label") wins over an inherited value from .root, no matter
+   how specific. More specific rules elsewhere (.detail-section-title,
+   .task-title-completed, etc.) still win over this by source order. */
+.label {
+    -fx-text-fill: -win-text;
+}
+
 .button {
     -fx-background-color: -win-control;
     -fx-background-radius: 8;
