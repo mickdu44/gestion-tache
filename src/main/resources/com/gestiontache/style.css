@@ -120,7 +120,7 @@
 }
 
 .combo-box-popup .list-cell:filled:hover,
-.date-picker-popup > * > .day-cell:hover {
+.date-picker-popup .day-cell:hover {
     -fx-background-color: -win-accent-soft;
 }
 
@@ -134,15 +134,31 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 16, 0, 0, 4);
 }
 
-.date-picker-popup > * > .day-cell {
-    -fx-background-color: transparent;
+/* The ">*>" child-combinator form used to target day-cell only matched
+   some JavaFX versions' popup layout; every cell got its own opaque
+   (white) background regardless, leaving -win-text (light) unreadable.
+   Descendant selectors below are layout-independent and explicit about
+   every cell state (name row, week numbers, other-month, hover, today). */
+.date-picker-popup .day-cell {
+    -fx-background-color: -win-surface;
     -fx-text-fill: -win-text;
 }
 
-.date-picker-popup > * > .day-cell:selected {
+.date-picker-popup .day-cell.previous-month,
+.date-picker-popup .day-cell.next-month {
+    -fx-text-fill: -win-text-disabled;
+}
+
+.date-picker-popup .day-cell:selected {
     -fx-background-color: -win-accent;
     -fx-background-radius: 4;
     -fx-text-fill: white;
+}
+
+.date-picker-popup .day-name-cell,
+.date-picker-popup .week-number-cell {
+    -fx-background-color: -win-control;
+    -fx-text-fill: -win-text-secondary;
 }
 
 .date-picker-popup .spinner,
